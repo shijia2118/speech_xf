@@ -4,20 +4,19 @@
 
 ### 官网注册
 * 1.注册账号
-请参阅[注册讯飞账号](https://console.xfyun.cn/)以获取更多信息。
+  请参阅[注册讯飞账号](https://console.xfyun.cn/)以获取更多信息。
 
 * 2.创建应用并获取AppID
 
-* 3.分别下载Android和IOS的SDK,配置时需要使用。
+* 3.分别下载Android和IOS端的SDK
 
 
 ### Android端配置
-* 1.导入SDK
-将上述步骤3中下载的Android SDK 压缩包中libs目录下所有子文件拷贝至Android工程**app/libs**目录下。
 
+* 1.在项目的android/app/main目录下新建Jnilibs目录，并拷贝libmsc.so。
 
 * 2.添加用户权限
-在工程 AndroidManifest.xml 文件中添加如下权限
+  在工程 AndroidManifest.xml 文件中添加如下权限
 
 ```XML
 <!--连接网络权限，用于执行云端语音能力 -->
@@ -48,7 +47,7 @@
 ```
 
 * 3.添加混淆
-如需在打包或者生成APK的时候进行混淆，请在proguard.pro中添加如下代码：
+  如需在打包或者生成APK的时候进行混淆，请在proguard.pro中添加如下代码：
 
 ```ProGuard
 -keep class com.iflytek.**{*;}

@@ -35,11 +35,9 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.speech_xf.speech_xf
+        package: com.example.speech_xf
         pluginClass: SpeechXfPlugin
       ios:
-        pluginClass: SpeechXfPlugin
-      linux:
         pluginClass: SpeechXfPlugin
 
   # To add assets to your plugin package, add an assets section, like this:

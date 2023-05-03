@@ -1,4 +1,4 @@
-group 'com.example.speech_xf.speech_xf'
+group 'com.example.speech_xf'
 version '1.0'
 
 buildscript {
@@ -32,4 +32,8 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
+}
+
+dependencies {
+    implementation files('libs/Msc.jar')
 }
