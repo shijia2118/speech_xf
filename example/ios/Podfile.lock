@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - permission_handler_apple (9.0.4):
+    - Flutter
+  - speech_xf (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - speech_xf (from `.symlinks/plugins/speech_xf/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  speech_xf:
+    :path: ".symlinks/plugins/speech_xf/ios"
+
+SPEC CHECKSUMS:
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
+  speech_xf: 4c1ceba0352f1f4de7690ee3f085a86e54115320
+
+PODFILE CHECKSUM: 3ba5b929ba1415f070802bdf3fd108ab975f6b6b
+
+COCOAPODS: 1.11.3
