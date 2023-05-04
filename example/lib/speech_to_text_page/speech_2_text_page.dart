@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:speech_xf/speech_xf.dart';
 
 import '../utils/permission_util.dart';
@@ -13,6 +15,8 @@ class Speech2TextPage extends StatefulWidget {
 
 class _Speech2TextPageState extends State<Speech2TextPage> {
   TextEditingController speechController = TextEditingController(); //语音识别结果控制器
+  TextEditingController userWordsController = TextEditingController(); //语音识别结果控制器
+
   String? nativeUiText;
   Map<String, dynamic> settingResult = {
     'language': 'zh_cn',
@@ -31,6 +35,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
   void dispose() {
     super.dispose();
     speechController.dispose();
+    userWordsController.dispose();
   }
 
   @override
@@ -79,6 +84,24 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
               ],
             ),
             const Text('使用无UI语音识别'),
+            const SizedBox(height: 30),
+            TextField(
+              controller: userWordsController,
+              maxLines: null,
+              decoration: const InputDecoration(
+                hintText: '用户热词',
+              ),
+            ),
+            const Text('上传词表,可以使云端识别更加准确,但仅对当前设备有效。如果要对所有设备生效，需要前往“讯飞开放平台官网—控制台 —个性化热词设置”。'),
+            OutlinedButton(
+              onPressed: uploadUserWords,
+              child: const Text('上传用户热词'),
+            ),
+            const SizedBox(height: 30),
+            OutlinedButton(
+              onPressed: audioRecognizer,
+              child: const Text('音频流识别'),
+            ),
           ],
         ),
       ),
@@ -112,6 +135,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     PermissionUtil.microPhone(
       context,
       action: () async {
+        showToast('请开始说话...', position: ToastPosition.bottom);
         String? text = await SpeechXf.openNativeUIDialog(
           isDynamicCorrection: true,
           language: settingResult['language'],
@@ -123,6 +147,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
           speechController.clear();
           speechController.text = text;
         }
+        showToast('结束说话...', position: ToastPosition.bottom);
       },
     );
   }
@@ -132,6 +157,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     PermissionUtil.microPhone(
       context,
       action: () async {
+        showToast('请开始说话...', position: ToastPosition.bottom);
         String? text = await SpeechXf.startListening(
           isDynamicCorrection: true,
           language: settingResult['language'],
@@ -143,6 +169,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
           speechController.clear();
           speechController.text = text;
         }
+        showToast('结束说话...', position: ToastPosition.bottom);
       },
     );
   }
@@ -155,5 +182,27 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
   /// 取消听写
   void cancelListening() async {
     await SpeechXf.cancelListening();
+  }
+
+  /// 上传用户热词
+  void uploadUserWords() async {
+    String userWords = await rootBundle.loadString('assets/userwords');
+    if (userWords.isNotEmpty) {
+      userWordsController.text = userWords;
+      await SpeechXf.uploadUserWords(userWords);
+    }
+  }
+
+  /// 音频流识别
+  void audioRecognizer() {
+    PermissionUtil.storage(
+      context,
+      action: () async {
+        String? result = await SpeechXf.audioRecognizer('iattest.wav');
+        if (result != null) {
+          speechController.text = result;
+        }
+      },
+    );
   }
 }

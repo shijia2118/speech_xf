@@ -67,4 +67,20 @@ class SpeechXf {
   static Future cancelListening() async {
     return SpeechXfPlatform.instance.cancelListening();
   }
+
+  /// 上传用户级热词
+  /// 与应用级热词相对。
+  /// 一般上传后10分钟左右生效，影响的范围是，当前 APPID 应用的当前设备——即同一应用，不同设备里上传的热词互不干扰；
+  /// 同一设备，不同APPID的应用上传的热词互不干扰。
+  /// 如果需要设置应用级热词，可以前往"讯飞开放平台官网—控制台 —个性化热词设置".
+  /// 上传后1-2小时后生效，应用级热词是对所有运行你应用的设备都生效，更新给当前APPID的所有使用设备。
+  static Future<void> uploadUserWords(String contents) {
+    return SpeechXfPlatform.instance.uploadUserWords(contents);
+  }
+
+  /// 音频流识别
+  /// [path] :音频流地址
+  static Future<String?> audioRecognizer(String path) {
+    return SpeechXfPlatform.instance.audioRecognizer(path);
+  }
 }

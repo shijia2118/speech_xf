@@ -8,8 +8,8 @@ class MethodChannelSpeechXf extends SpeechXfPlatform {
   final methodChannel = const MethodChannel('xf_speech_to_text');
 
   @override
-  Future init(String appId) async {
-    await methodChannel.invokeMethod<bool>('init', {'appId': appId});
+  Future<void> init(String appId) async {
+    await methodChannel.invokeMethod<void>('init', {'appId': appId});
   }
 
   @override
@@ -56,11 +56,27 @@ class MethodChannelSpeechXf extends SpeechXfPlatform {
 
   @override
   Future<void> stopListening() async {
-    await methodChannel.invokeMethod<bool>('stop_listening');
+    await methodChannel.invokeMethod<void>('stop_listening');
   }
 
   @override
   Future<void> cancelListening() async {
-    await methodChannel.invokeMethod<bool>('cancel_listening');
+    await methodChannel.invokeMethod<void>('cancel_listening');
+  }
+
+  @override
+  Future<void> uploadUserWords(String contents) async {
+    await methodChannel.invokeMethod<void>(
+      'upload_user_words',
+      {'contents': contents},
+    );
+  }
+
+  @override
+  Future<String?> audioRecognizer(String path) async {
+    return await methodChannel.invokeMethod<String>(
+      'audio_recognizer',
+      {'path': path},
+    );
   }
 }

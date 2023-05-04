@@ -74,7 +74,7 @@ class _SettingPageState extends State<SettingPage> {
         ),
       ),
       onWillPop: () async {
-        onBackHandler();
+        widget.callback(settingResult);
         return true;
       },
     );
@@ -118,8 +118,7 @@ class _SettingPageState extends State<SettingPage> {
   /// 语言设置
   void languageSetting(String title) {
     List<AlertDialogAction<String>> actions = kLanguages
-        .map((e) =>
-            AlertDialogAction(key: e.values.first, label: e.values.first))
+        .map((e) => AlertDialogAction(key: e.values.first, label: e.values.first))
         .toList();
     Future.microtask(() async {
       String? result = await showConfirmationDialog<String>(
@@ -208,5 +207,6 @@ class _SettingPageState extends State<SettingPage> {
   /// 返回按钮
   void onBackHandler() {
     widget.callback(settingResult);
+    Navigator.pop(context);
   }
 }

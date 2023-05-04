@@ -47,4 +47,12 @@ abstract class SpeechXfPlatform extends PlatformInterface {
   Future<void> cancelListening() {
     throw UnimplementedError('cancelListening() has not been implemented.');
   }
+
+  Future<void> uploadUserWords(String contents) {
+    throw UnimplementedError('uploadUserWords() has not been implemented.');
+  }
+
+  Future<String?> audioRecognizer(String path) {
+    throw UnimplementedError('audioRecognizer() has not been implemented.');
+  }
 }
