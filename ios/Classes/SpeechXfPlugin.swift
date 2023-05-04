@@ -9,6 +9,15 @@ public class SpeechXfPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    result("iOS " + UIDevice.current.systemVersion)
+      if call.method == "init"{
+          let data:Optional<Dictionary> = call.arguments as? Dictionary<String, String>
+          if data != nil && data!["appId"] != nil {
+              let initString = String(format: "appid=%@", data!["appId"]!)
+              print(">>>>>>>>>>>\(initString)")
+              
+              
+              
+          }
+      }
   }
 }

@@ -54,6 +54,19 @@
 -keepattributes Signature
 ```
 
+### IOS端配置
+1.在info.plist中添加以下权限
+```
+<key>NSMicrophoneUsageDescription</key>
+<string></string>
+<key>NSLocationUsageDescription</key>
+<string></string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string></string>
+<key>NSContactsUsageDescription</key>
+<string></string>
+```
+
 ### 使用
 * 1.导入
 * 2.初始化
