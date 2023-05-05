@@ -20,6 +20,7 @@
 		614350512A03F88300EE10E9 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614350502A03F88300EE10E9 /* AddressBook.framework */; };
 		614350532A03F88900EE10E9 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614350522A03F88900EE10E9 /* QuartzCore.framework */; };
 		614350552A03F88F00EE10E9 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614350542A03F88F00EE10E9 /* CoreGraphics.framework */; };
+		6143505C2A04957A00EE10E9 /* iflyMSC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6143505B2A04957A00EE10E9 /* iflyMSC.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -58,6 +59,7 @@
 		614350522A03F88900EE10E9 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		614350542A03F88F00EE10E9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		614350562A03F89A00EE10E9 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		6143505B2A04957A00EE10E9 /* iflyMSC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = iflyMSC.framework; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 				614350472A03F86100EE10E9 /* CoreTelephony.framework in Frameworks */,
 				614350412A03F84C00EE10E9 /* AVFoundation.framework in Frameworks */,
 				A856A26689782AF27F364638 /* Pods_Runner.framework in Frameworks */,
+				6143505C2A04957A00EE10E9 /* iflyMSC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,6 +112,7 @@
 		6143503C2A03F83900EE10E9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6143505B2A04957A00EE10E9 /* iflyMSC.framework */,
 				614350562A03F89A00EE10E9 /* libc++.tbd */,
 				614350542A03F88F00EE10E9 /* CoreGraphics.framework */,
 				614350522A03F88900EE10E9 /* QuartzCore.framework */,
@@ -407,6 +411,10 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 2XZD4T9JXF;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -536,6 +544,10 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 2XZD4T9JXF;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -559,6 +571,10 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 2XZD4T9JXF;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
