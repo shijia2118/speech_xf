@@ -27,7 +27,7 @@ public class SpeechXfPlugin: NSObject, FlutterPlugin, IFlyRecognizerViewDelegate
           }
       } else if call.method == "open_native_ui_dialog"{
           let data:Optional<Dictionary> = call.arguments as? Dictionary<String, String>
-          var isDynamicCorrection:Bool? = data?["isDynamicCorrection"] as? Bool
+          let isDynamicCorrection:Bool? = data?["isDynamicCorrection"] as? Bool
           var language:String? = data?["language"] as? String
           var vadBos = data?["vadBos"] as? String
           var vadEos = data?["vadEos"] as? String
