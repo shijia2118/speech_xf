@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -80,13 +81,13 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         // 是否开启动态修正
         // 注意：使用动态修正功能需到控制台-流式听写-高级功能处点击开通；
         // 动态修正仅支持中文,默认不开启。
-        isDynamicCorrection = call.argument("isDynamicCorrection");
-        if (isDynamicCorrection != null && isDynamicCorrection) {
-          mIatDialog.setParameter("dwa", "wpgs");
-        }
         // 设置语言
         language = call.argument("language");
         mIatDialog.setParameter(SpeechConstant.LANGUAGE,language);
+        isDynamicCorrection = call.argument("isDynamicCorrection");
+        if (isDynamicCorrection != null && isDynamicCorrection&& Objects.equals(language, "zh_cn")) {
+          mIatDialog.setParameter("dwa", "wpgs");
+        }
         //前端点超时
         vadBos = call.argument("vadBos");
         mIatDialog.setParameter(SpeechConstant.VAD_BOS,vadBos);

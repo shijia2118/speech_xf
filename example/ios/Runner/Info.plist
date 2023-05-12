@@ -24,6 +24,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>应用需要您的同意,才能使用麦克风</string>
+	<key>NSLocationUsageDescription</key>
+	<string>应用需要您的同意，才能获取当前定位</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>应用需要您的同意，才能获取当前定位</string>
+	<key>NSContactsUsageDescription</key>
+	<string>应用想访问您的通讯录,以便更好的使用相关功能</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

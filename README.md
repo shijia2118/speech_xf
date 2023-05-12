@@ -54,7 +54,7 @@
 -keepattributes Signature
 ```
 
-### IOS端配置
+### IOS端配置(真机测试，不支持模拟器)
 1.在info.plist中添加以下权限
 ```
 <key>NSMicrophoneUsageDescription</key>
