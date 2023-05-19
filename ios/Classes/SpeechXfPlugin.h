@@ -7,4 +7,5 @@
 @property (nonatomic, strong) IFlyRecognizerView *iflyRecognizerView; //带UI的识别对象
 
 
+
 @end

@@ -2,8 +2,13 @@
 #import "IATConfig.h"
 #import "IFlyMSC/IFlyMSC.h"
 #import "ISRDataHelper.h"
+#import "ToastView.h"
 
 @implementation SpeechXfPlugin
+FlutterResult _callbackResult;
+NSMutableString *speechResult;
+
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
       methodChannelWithName:@"xf_speech_to_text"
@@ -14,6 +19,10 @@
 
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    
+    _callbackResult = result; //存储回调函数
+    speechResult = [[NSMutableString alloc] init];
+    
     if ([@"init" isEqualToString:call.method]){
         //初始化SDK
         [self init : call.arguments];
@@ -64,9 +73,6 @@
     _iflyRecognizerView.delegate = self;
     
     if (_iflyRecognizerView != nil) {
-        NSNumber *idcNum = args[@"isDynamicCorrection"];
-        BOOL isDynamicCorrection = idcNum.boolValue;
-        
         NSString *language = args[@"language"];
         NSString *vadBos = args[@"vadBos"];
         NSString *vadEos = args[@"vadEos"];
@@ -93,8 +99,7 @@
 }
 
 - (void)onResults:(NSArray *)results isLast:(BOOL)isLast {
-    NSLog(@">>>>>>>>>results:",results);
-    NSLog(@">>>>>>>>>isLast:",isLast);
+
 }
 
 - (void)onCompleted:(IFlySpeechError *)error {
@@ -103,6 +108,7 @@
     if (error.errorCode != 0 ) {
         text = [NSString stringWithFormat:@"Error：%d %@", error.errorCode,error.errorDesc];
         NSLog(@"error=%@",text);
+        [ToastView showToastWithMessage:text duration:2.0];
     }
 }
 
@@ -119,13 +125,15 @@
     resultFromJson = [ISRDataHelper stringFromJson:resultString];//;[ISRDataHelper stringFromJson:resultString];
         
     NSLog(@"resultFromJson=%@",resultFromJson);
+    [speechResult appendString : resultFromJson];//字符串追加
     
     if(isLast){
-        NSLog(@"result>>>>%@",resultFromJson);
+        if(_callbackResult){
+            _callbackResult(speechResult);
+            _callbackResult=nil; //重置回调函数为空，以便下次调用时使用新的回调函数
+            speechResult = nil;
+        }
     }
-        
-       
-
 }
 
 @end
