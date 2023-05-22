@@ -18,7 +18,7 @@ A new Flutter project.
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 
-  s.frameworks = 'AVFoundation', 'SystemConfiguration', 'Foundation', 'CoreTelephony', 'AudioToolbox', 'UIKit', 'CoreLocation', 'QuartzCore', 'CoreGraphics', 'CoreTelephony', 'CoreTelephony', 'CoreTelephony', 'CoreTelephony'
+  s.frameworks = 'AVFoundation', 'SystemConfiguration', 'Foundation', 'CoreTelephony', 'AudioToolbox', 'UIKit', 'CoreLocation', 'QuartzCore', 'CoreGraphics'
   s.libraries = 'c++', 'z'
   s.ios.vendored_frameworks = 'Frameworks/iflyMSC.framework'
   s.vendored_frameworks = 'iflyMSC.framework'

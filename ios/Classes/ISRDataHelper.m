@@ -17,10 +17,12 @@
  **/
 + (NSString *)stringFromJson:(NSString*)params
 {
+
     if (params == NULL) {
         return nil;
     }
     
+
     NSMutableString *tempStr = [[NSMutableString alloc] init];
     NSDictionary *resultDic  = [NSJSONSerialization JSONObjectWithData:
                                 [params dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
