@@ -1,9 +1,37 @@
-import 'speech_xf_platform_interface.dart';
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+import 'package:speech_xf/speech_result.dart';
 
 class SpeechXf {
+  static const methodChannel = MethodChannel('xf_speech_to_text');
+
+  static const eventChannel = EventChannel('xf_speech_to_text_stream');
+
+  static Stream<Map<String, Object>> onGetResult = eventChannel
+      .receiveBroadcastStream()
+      .asBroadcastStream()
+      .map<Map<String, Object>>((element) => element.cast<String, Object>());
+
+  StreamController<SpeechResult>? receiveStream;
+  StreamSubscription<Map<String, Object>>? subscription;
+
+  /// 获取翻译结果流
+  Stream<SpeechResult> onResult() {
+    if (receiveStream == null) {
+      receiveStream = StreamController();
+      subscription = onGetResult.listen((Map<String, Object> event) {
+        Map<String, Object> newEvent = Map<String, Object>.of(event);
+        receiveStream?.add(SpeechResult.fromJson(newEvent));
+      });
+    }
+    return receiveStream!.stream;
+  }
+
   /// 初始化
   static Future init(String appId) {
-    return SpeechXfPlatform.instance.init(appId);
+    Map<String, dynamic> arguments = {'appId': appId};
+    return methodChannel.invokeMethod('init', arguments);
   }
 
   /// 显示内置语音识别对话框
@@ -31,41 +59,43 @@ class SpeechXf {
     String? vadEos,
     String? ptt,
   }) {
-    return SpeechXfPlatform.instance.openNativeUIDialog(
-      isDynamicCorrection: isDynamicCorrection,
-      language: language,
-      vadBos: vadBos,
-      vadEos: vadEos,
-      ptt: ptt,
-    );
+    Map<String, dynamic> arguments = {
+      'isDynamicCorrection': isDynamicCorrection,
+      'language': language,
+      'vadBos': vadBos,
+      'vadEos': vadEos,
+      'ptt': ptt,
+    };
+    return methodChannel.invokeMethod('open_native_ui_dialog', arguments);
   }
 
   /// 开始听写（无UI）
   /// 参数同上
-  static Future<String?> startListening({
+  static Future<void> startListening({
     bool? isDynamicCorrection,
     String? language,
     String? vadBos,
     String? vadEos,
     String? ptt,
   }) {
-    return SpeechXfPlatform.instance.startListening(
-      isDynamicCorrection: isDynamicCorrection,
-      language: language,
-      vadBos: vadBos,
-      vadEos: vadEos,
-      ptt: ptt,
-    );
+    Map<String, dynamic> arguments = {
+      'isDynamicCorrection': isDynamicCorrection,
+      'language': language,
+      'vadBos': vadBos,
+      'vadEos': vadEos,
+      'ptt': ptt,
+    };
+    return methodChannel.invokeMethod('start_listening', arguments);
   }
 
   /// 停止听写
   static Future stopListening() async {
-    return SpeechXfPlatform.instance.stopListening();
+    return methodChannel.invokeMethod('stop_listening');
   }
 
   /// 取消听写
   static Future cancelListening() async {
-    return SpeechXfPlatform.instance.cancelListening();
+    return methodChannel.invokeMethod('cancel_listening');
   }
 
   /// 上传用户级热词
@@ -75,12 +105,14 @@ class SpeechXf {
   /// 如果需要设置应用级热词，可以前往"讯飞开放平台官网—控制台 —个性化热词设置".
   /// 上传后1-2小时后生效，应用级热词是对所有运行你应用的设备都生效，更新给当前APPID的所有使用设备。
   static Future<void> uploadUserWords(String contents) {
-    return SpeechXfPlatform.instance.uploadUserWords(contents);
+    Map<String, dynamic> arguments = {'contents': contents};
+    return methodChannel.invokeMethod('upload_user_words', arguments);
   }
 
   /// 音频流识别
   /// [path] :音频流地址
   static Future<String?> audioRecognizer(String path) {
-    return SpeechXfPlatform.instance.audioRecognizer(path);
+    Map<String, dynamic> arguments = {'path': path};
+    return methodChannel.invokeMethod('audio_recognizer', arguments);
   }
 }

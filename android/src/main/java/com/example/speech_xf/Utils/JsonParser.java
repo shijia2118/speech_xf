@@ -1,13 +1,46 @@
 package com.example.speech_xf.Utils;
 
+import android.util.Log;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Json结果解析类
  */
 public class JsonParser {
+
+//    public static String parseResult(String result){
+//        String sn = null;
+//        String pgs = null;
+//        String rg = null;
+//
+//        private final HashMap<String, String> mIatResults = new LinkedHashMap<>(); // 用HashMap存储听写结果
+//
+//        // 读取json结果中的sn字段
+//        try {
+//            JSONObject resultJson = new JSONObject(result);
+//            sn = resultJson.optString("sn");
+//            pgs = resultJson.optString("pgs");
+//            rg = resultJson.optString("rg");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        //如果pgs是rpl就在已有的结果中删除掉要覆盖的sn部分
+//        if (pgs != null && pgs.equals("rpl")) {
+//            String[] strings = rg.replace("[", "").replace("]", "").split(",");
+//            int begin = Integer.parseInt(strings[0]);
+//            int end = Integer.parseInt(strings[1]);
+//            for (int i = begin; i <= end; i++) {
+//                mIatResults.remove(i+"");
+//            }
+//        }
+//    }
 
     public static String parseIatResult(String json) {
         StringBuffer ret = new StringBuffer();
@@ -20,6 +53,7 @@ public class JsonParser {
                 // 转写结果词，默认使用第一个结果
                 JSONArray items = words.getJSONObject(i).getJSONArray("cw");
                 JSONObject obj = items.getJSONObject(0);
+                Log.d(">>>>>>>>>>>",obj.toString());
                 ret.append(obj.getString("w"));
 //				如果需要多候选结果，解析数组其他字段
 //				for(int j = 0; j < items.length(); j++)

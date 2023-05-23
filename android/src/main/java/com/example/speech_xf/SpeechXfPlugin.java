@@ -6,7 +6,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.example.speech_xf.Utils.FucUtil;
 import com.example.speech_xf.Utils.JsonParser;
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
@@ -21,6 +20,7 @@ import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.ui.RecognizerDialog;
 import com.iflytek.cloud.ui.RecognizerDialogListener;
 
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,10 +30,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
+import io.flutter.BuildConfig;
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -41,13 +43,14 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.FlutterMain;
 
 /** SpeechXfPlugin */
-public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
+public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware ,EventChannel.StreamHandler{
 
   private MethodChannel channel;
+  public static EventChannel.EventSink mEventSink = null;
+
   private Context mContext;
 
   private final String TAG = "============>xf_log:";
-  private final HashMap<String, String> mIatResults = new LinkedHashMap<>(); // 用HashMap存储听写结果
   private SpeechRecognizer mIat;
   private Toast mToast;
   int ret = 0;// 函数调用返回值
@@ -57,10 +60,17 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   String ptt = "1";
   Boolean isDynamicCorrection = false;
 
+  private final HashMap<String, String> mIatResults = new LinkedHashMap<>();
+
+  String type = "";
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text");
     channel.setMethodCallHandler(this);
+
+    EventChannel eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text_stream");
+    eventChannel.setStreamHandler(this);
   }
 
   @Override
@@ -73,6 +83,8 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         SpeechUtility.createUtility(mContext, SpeechConstant.APPID + "=" + appId);
         break;
       case "open_native_ui_dialog":
+        type = "1";
+        mIatResults.clear();
         /// 显示SDK内置对话框
         if(mIat!=null){
           mIat.setParameter(SpeechConstant.PARAMS, null);
@@ -98,12 +110,13 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         ptt = call.argument("ptt");
         mIatDialog.setParameter(SpeechConstant.ASR_PTT,ptt);
 
-        mIatResults.clear();
-        mIatDialog.setListener(mRecognizerDialogListener(result));
+        mIatDialog.setListener(mRecognizerDialogListener);
         mIatDialog.show();
-//        showTip("请开始说话...");  
         break;
       case "start_listening":
+        type = "2";
+        mIatResults.clear();
+
         /// 开始听写(无UI)
         mIat = SpeechRecognizer.createRecognizer(mContext, mInitListener);
         isDynamicCorrection = call.argument("isDynamicCorrection");
@@ -115,9 +128,8 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         vadEos = call.argument("vadEos");
         ptt = call.argument("ptt");
         setParam();
-        mIatResults.clear();
         // 不显示听写对话框
-        ret = mIat.startListening(mRecognizerListener(result));
+        ret = mIat.startListening(mRecognizerListener);
         if (ret != ErrorCode.SUCCESS) {
           showTip("听写失败,错误码：" + ret + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
         }
@@ -135,8 +147,8 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
       case "upload_user_words":
         /// 上传用户级词表
         /// 与应用级热词相对。
-        /// 一般上传后10分钟左右生效，影响的范围是，当前 APPID 应用的当前设备——即同一应用，不同设备里上传的热词互不干扰；
-        /// 同一设备，不同APPID的应用上传的热词互不干扰。
+        /// 一般上传后10分钟左右生效，影响的范围是，当前 appId 应用的当前设备——即同一应用，不同设备里上传的热词互不干扰；
+        /// 同一设备，不同appId的应用上传的热词互不干扰。
         if(mIat == null){
           mIat = SpeechRecognizer.createRecognizer(mContext, mInitListener);
         }
@@ -150,16 +162,15 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         break;
       case "audio_recognizer":
         /// 音频流识别
+        mIatResults.clear();
         if(mIat == null){
           mIat = SpeechRecognizer.createRecognizer(mContext, mInitListener);
         }
-        // 清除缓存
-        mIatResults.clear();
         // 设置参数
         setParam();
         // 设置音频来源为外部文件
         mIat.setParameter(SpeechConstant.AUDIO_SOURCE, "-1");
-        ret = mIat.startListening(mRecognizerListener(result));
+        ret = mIat.startListening(mRecognizerListener);
         if (ret != ErrorCode.SUCCESS) {
           showTip("识别失败,错误码：" + ret + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
           return;
@@ -206,92 +217,76 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   /**
    * 听写UI监听器
    */
-  private RecognizerDialogListener mRecognizerDialogListener(Result result){
-    return new RecognizerDialogListener() {
-      // 返回结果
-      public void onResult(RecognizerResult results, boolean isLast) {
-        String recognizerResult = getRecognizerResult(results);
-        if(isLast){
-          result.success(recognizerResult);
-        }
+  private final RecognizerDialogListener mRecognizerDialogListener = new RecognizerDialogListener() {
+    // 返回结果
+    public void onResult(RecognizerResult results, boolean isLast) {
+      String recognizerResult =  getRecognizerResult(results);
+      if(isLast){
+        HashMap<String,Object> map =new HashMap<>();
+        map.put("result", recognizerResult);
+        map.put("success", true);
+        map.put("isLast", true);
+        map.put("type", type);
+        mEventSink.success(map);
       }
+    }
 
-      // 识别回调错误
-      public void onError(SpeechError error) {
-        Toast.makeText(
-                mContext,
-                error.getPlainDescription(true),
-                Toast.LENGTH_SHORT
-        ).show();
-      }
-    };
-  }
+    // 识别回调错误
+    public void onError(SpeechError error) {
+      HashMap<String,Object> map = new HashMap<>();
+      map.put("error", error.getPlainDescription(true));
+      map.put("success", false);
+      map.put("type", type);
+      mEventSink.success(map);
+    }
+  };
 
   /**
    * 听写监听器。
    */
-  private RecognizerListener mRecognizerListener(Result result){
-    return new RecognizerListener() {
-
-      @Override
-      public void onBeginOfSpeech() {
-        // 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入
-//        showTip("开始说话");
-      }
-
-      @Override
-      public void onError(SpeechError error) {
-        // Tips：
-        // 错误码：10118(您没有说话)，可能是录音机权限被禁，需要提示用户打开应用的录音权限。
-        android.util.Log.d(TAG, "onError " + error.getPlainDescription(true));
-        showTip(error.getPlainDescription(true));
-      }
-
-      @Override
-      public void onEndOfSpeech() {
-        // 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入
-//        showTip("结束说话");
-      }
-
-      @Override
-      public void onResult(RecognizerResult results, boolean isLast) {
-        android.util.Log.d(TAG, results.getResultString());
-        String recognizerResult =  getRecognizerResult(results);
-        if (isLast) {
-          android.util.Log.d(TAG, "onResult 结束");
-          result.success(recognizerResult);
-        }
-      }
-
-      @Override
-      public void onVolumeChanged(int volume, byte[] data) {
-//        showTip("当前正在说话，音量大小 = " + volume + " 返回音频数据 = " + data.length);
-      }
-
-      @Override
-      public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
-        // 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
-        // 若使用本地能力，会话id为null
-        //	if (SpeechEvent.EVENT_SESSION_ID == eventType) {
-        //		String sid = obj.getString(SpeechEvent.KEY_EVENT_SESSION_ID);
-        //		Log.d(TAG, "session id =" + sid);
-        //	}
-      }
-    };
-  }
-
-  /**
-   * 上传联系人/词表监听器。
-   */
-  private final LexiconListener mLexiconListener = new LexiconListener() {
+  private final RecognizerListener mRecognizerListener = new RecognizerListener() {
 
     @Override
-    public void onLexiconUpdated(String lexiconId, SpeechError error) {
-      if (error != null) {
-        showTip(error.toString());
-      } else {
-        showTip("上传成功");
+    public void onBeginOfSpeech() {
+      // 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入
+//        showTip("开始说话");
+    }
+
+    @Override
+    public void onError(SpeechError error) {
+      HashMap<String,Object> map = new HashMap<>();
+      map.put("error", error.getPlainDescription(true));
+      map.put("success", false);
+      map.put("type", type);
+      mEventSink.success(map);
+    }
+
+    @Override
+    public void onEndOfSpeech() {
+      // 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入
+//        showTip("结束说话");
+    }
+
+    @Override
+    public void onResult(RecognizerResult results, boolean isLast) {
+      String recognizerResult =  getRecognizerResult(results);
+      if(isLast){
+        HashMap<String,Object> map =new HashMap<>();
+        map.put("result",recognizerResult);
+        map.put("success", true);
+        map.put("isLast", isLast);
+        map.put("type", type);
+        mEventSink.success(map);
       }
+    }
+
+    @Override
+    public void onVolumeChanged(int volume, byte[] data) {
+//        showTip("当前正在说话，音量大小 = " + volume + " 返回音频数据 = " + data.length);
+    }
+
+    @Override
+    public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
     }
   };
 
@@ -332,6 +327,18 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     Log.d(TAG,resultBuffer.toString());
     return resultBuffer.toString();
   }
+
+  /**
+   * 上传联系人/词表监听器。
+   */
+  private final LexiconListener mLexiconListener = (lexiconId, error) -> {
+    if (error != null) {
+      showTip(error.toString());
+    } else {
+      showTip("上传成功");
+    }
+  };
+
 
   private void showTip(final String str) {
     if (mToast != null) {
@@ -395,6 +402,16 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   @Override
   public void onDetachedFromActivity() {
+
+  }
+
+  @Override
+  public void onListen(Object arguments, EventChannel.EventSink events) {
+    mEventSink = events;
+  }
+
+  @Override
+  public void onCancel(Object arguments) {
 
   }
 }

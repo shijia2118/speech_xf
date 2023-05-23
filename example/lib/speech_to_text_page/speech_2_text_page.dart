@@ -29,6 +29,20 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
   void initState() {
     super.initState();
     initSdk();
+
+    /// 语音听写结果监听
+    SpeechXf().onResult().listen((event) {
+      if (event.error != null) {
+        showToast(event.error!, position: ToastPosition.bottom);
+      } else {
+        if (event.result != null) {
+          speechController.text = speechController.text + event.result!;
+        }
+        if (event.isLast == true) {
+          showToast('结束说话...', position: ToastPosition.bottom);
+        }
+      }
+    });
   }
 
   @override
@@ -135,19 +149,15 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     PermissionUtil.microPhone(
       context,
       action: () async {
+        speechController.clear();
         showToast('请开始说话...', position: ToastPosition.bottom);
-        String? text = await SpeechXf.openNativeUIDialog(
+        await SpeechXf.openNativeUIDialog(
           isDynamicCorrection: true,
           language: settingResult['language'],
           vadBos: settingResult['vadBos'],
           vadEos: settingResult['vadEos'],
           ptt: settingResult['ptt'],
         );
-        if (text != null && text.isNotEmpty) {
-          speechController.clear();
-          speechController.text = text;
-        }
-        showToast('结束说话...', position: ToastPosition.bottom);
       },
     );
   }
@@ -158,18 +168,14 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
       context,
       action: () async {
         showToast('请开始说话...', position: ToastPosition.bottom);
-        String? text = await SpeechXf.startListening(
-          isDynamicCorrection: true,
+        speechController.clear();
+        await SpeechXf.startListening(
+          isDynamicCorrection: false,
           language: settingResult['language'],
           vadBos: settingResult['vadBos'],
           vadEos: settingResult['vadEos'],
           ptt: settingResult['ptt'],
         );
-        if (text != null && text.isNotEmpty) {
-          speechController.clear();
-          speechController.text = text;
-        }
-        showToast('结束说话...', position: ToastPosition.bottom);
       },
     );
   }
@@ -198,10 +204,8 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     PermissionUtil.storage(
       context,
       action: () async {
-        String? result = await SpeechXf.audioRecognizer('iattest.wav');
-        if (result != null) {
-          speechController.text = result;
-        }
+        speechController.clear();
+        await SpeechXf.audioRecognizer('iattest.wav');
       },
     );
   }
