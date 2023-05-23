@@ -54,7 +54,7 @@
 -keepattributes Signature
 ```
 
-### IOS端配置(真机测试，不支持模拟器)
+### IOS端配置
 1.在info.plist中添加以下权限
 ```
 <key>NSMicrophoneUsageDescription</key>
@@ -67,6 +67,77 @@
 <string></string>
 ```
 
+**注：建议真机测试。如果非要用模拟器，则使用Xcode打开项目。在Build Settings中找到Excluded Architectures,在debug中添加支持arm64架构。**
+
 ### 使用
-* 1.导入
+* 1.添加依赖
+```
+dependencies:
+  speech_xf: ^0.0.1
+
+```
 * 2.初始化
+```
+/// 初始化SDK
+  void initSdk() async {
+    await SpeechXf.init('这里是你在讯飞平台申请的appid');
+  }
+  ```
+
+  * 3.使用内置界面
+  ```
+  await SpeechXf.openNativeUIDialog(
+    isDynamicCorrection: true,
+    language: settingResult['language'],
+    vadBos: settingResult['vadBos'],
+    vadEos: settingResult['vadEos'],
+    ptt: settingResult['ptt'],
+  );
+  ```
+
+  *4.无UI语音识别
+  ```
+  await SpeechXf.startListening(
+    isDynamicCorrection: false,
+    language: settingResult['language'],
+    vadBos: settingResult['vadBos'],
+    vadEos: settingResult['vadEos'],
+    ptt: settingResult['ptt'],
+  );
+  ```
+
+  *5.停止
+  ```
+  await SpeechXf.stopListening();
+  ```
+
+  *6.取消
+  ```
+   await SpeechXf.cancelListening();
+  ```
+
+  *7.语音听写结果监听
+  ```
+  SpeechXf().onResult().listen((event) {
+    if (event.error != null) {
+      showToast(event.error!, position: ToastPosition.bottom);
+    } else {
+      if (event.result != null) {
+        speechController.text = speechController.text + event.result!;
+      }
+      if (event.isLast == true) {
+        showToast('结束说话...', position: ToastPosition.bottom);
+      }
+    }
+  });
+  ```
+
+  *8.上传用户热词
+  ```
+  await SpeechXf.uploadUserWords(userWords);
+  ```
+
+  *9.音频流识别
+  ```
+  await SpeechXf.audioRecognizer('iattest.wav');
+  ```
