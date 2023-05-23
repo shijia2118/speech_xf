@@ -1,13 +1,14 @@
 name: speech_xf
 description: 该插件集成了讯飞语音识别功能。支持Android和IOS平台
 version: 0.0.1
-homepage: "https"
-repository: https://github.com/shijia2118/speech_xf.git
-
+homepage: "https://github.com/shijia2118/speech_xf.git"
+repository: "https://github.com/shijia2118/speech_xf.git"
+publish_to: "https://pub.dev"
 
 environment:
   sdk: '>=2.19.6 <3.0.0'
   flutter: ">=2.5.0"
+  
 
 dependencies:
   flutter:
