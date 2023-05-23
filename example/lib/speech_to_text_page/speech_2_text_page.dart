@@ -124,7 +124,8 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
 
   /// 初始化SDK
   void initSdk() async {
-    await SpeechXf.init('这里是你在讯飞平台申请的appid');
+    // await SpeechXf.init('这里是你在讯飞平台申请的appid');
+    await SpeechXf.init('e47801bc');
   }
 
   /// 跳转到设置页面

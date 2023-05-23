@@ -179,28 +179,24 @@ NSString *pcmFilePath = @"";
     [_iFlySpeechRecognizer setParameter:@"json" forKey:[IFlySpeechConstant RESULT_TYPE]];
     [_iFlySpeechRecognizer setParameter:IFLY_AUDIO_SOURCE_STREAM forKey:@"audio_source"];    //设置音频为外部来源
     
+    //开始语音识别
     BOOL ret  = [_iFlySpeechRecognizer startListening];
-    
-    
-    
     if (ret) {
-        
+        //从flutter端获取音频文件
         NSString *pcmFileName = args[@"path"];
         NSString* key = [flutterPluginRegistrar lookupKeyForAsset:[@"assets/" stringByAppendingString:pcmFileName]];
         pcmFilePath = [[NSBundle mainBundle] pathForResource:key ofType:nil];
 
-
-       
-        //set the category of AVAudioSession
+        //初始化录音环境,主要用于识别录音器。
         [IFlyAudioSession initRecordingAudioSession];
 
         _pcmRecorder.delegate = self;
 
-        //start recording
-        BOOL ret = [_pcmRecorder start];
-        NSLog(@"%s[OUT],录制成功 ret=%d",__func__,ret);
+        //开始录制
+        BOOL pcmRet = [_pcmRecorder start];
+        NSLog(@"%s[OUT],Success,Recorder ret=%d",__func__,pcmRet);
     } else {
-        NSLog(@"%s[OUT],录制失败",__func__);
+        NSLog(@"%s[OUT],语音识别失败",__func__);
     }
 }
 
@@ -268,6 +264,7 @@ NSString *pcmFilePath = @"";
  * 语音识别结果处理
  */
 -(void) handleResult:(NSArray *)results isLast:(BOOL)isLast{
+
     if (results != nil){
         NSMutableString *resultString = [[NSMutableString alloc] init];
         NSDictionary *dic = [results objectAtIndex:0];
@@ -345,15 +342,20 @@ NSString *pcmFilePath = @"";
 
 
 - (void)onIFlyRecorderBuffer:(const void *)buffer bufferSize:(int)size {
-//    NSData *audioBuffer = [NSData dataWithBytes:buffer length:size];
-    //写入音频数据
-    NSData *data = [NSData dataWithContentsOfFile:pcmFilePath];    //从文件中读取音频
-    int ret = [self.iFlySpeechRecognizer writeAudio:data];//写入音频，让SDK识别。建议将音频数据分段写入。
     
-//    int ret = [self.iFlySpeechRecognizer writeAudio:audioBuffer];
-    if (!ret) {
-        [self.iFlySpeechRecognizer stopListening];
+    NSData *fullAudioData = [NSData dataWithContentsOfFile:pcmFilePath]; // 从文件中读取完整的音频数据
+    NSInteger totalLength = fullAudioData.length;
+    NSInteger segmentLength = 1024; // 定义每个片段的长度，这里使用 1024 字节作为示例
+
+    for (NSInteger offset = 0; offset < totalLength; offset += segmentLength) {
+        NSInteger length = MIN(segmentLength, totalLength - offset);
+        NSData *segmentData = [fullAudioData subdataWithRange:NSMakeRange(offset, length)];
+        [self.iFlySpeechRecognizer writeAudio:segmentData];
     }
+
+    // 音频数据写入结束时调用 stopListening 方法
+    [self.iFlySpeechRecognizer stopListening];
+
 }
 
 - (void)onIFlyRecorderError:(IFlyPcmRecorder *)recoder theError:(int)error {
