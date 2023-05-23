@@ -62,7 +62,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   private final HashMap<String, String> mIatResults = new LinkedHashMap<>();
 
-  String type;
+  String type = "";
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
