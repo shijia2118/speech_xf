@@ -95,7 +95,7 @@ dependencies:
   );
   ```
 
-  *4.无UI语音识别
+  * 4.无UI语音识别
   ```
   await SpeechXf.startListening(
     isDynamicCorrection: false,
@@ -106,17 +106,17 @@ dependencies:
   );
   ```
 
-  *5.停止
+  * 5.停止
   ```
   await SpeechXf.stopListening();
   ```
 
-  *6.取消
+  * 6.取消
   ```
    await SpeechXf.cancelListening();
   ```
 
-  *7.语音听写结果监听
+  * 7.语音听写结果监听
   ```
   SpeechXf().onResult().listen((event) {
     if (event.error != null) {
@@ -132,12 +132,12 @@ dependencies:
   });
   ```
 
-  *8.上传用户热词
+  * 8.上传用户热词
   ```
   await SpeechXf.uploadUserWords(userWords);
   ```
 
-  *9.音频流识别
+  * 9.音频流识别
   ```
   await SpeechXf.audioRecognizer('iattest.wav');
   ```
