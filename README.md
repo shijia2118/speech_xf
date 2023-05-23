@@ -1,8 +1,8 @@
 # speech_xf
 
-该插件集成了讯飞语音识别功能。支持Android和IOS平台
+该插件集成了讯飞语音识别功能,支持Android和IOS平台
 
-### 官网注册
+### ** 官网注册 **
 * 1.注册账号
   请参阅[注册讯飞账号](https://console.xfyun.cn/)以获取更多信息。
 
@@ -11,9 +11,9 @@
 * 3.分别下载Android和IOS端的SDK
 
 
-### Android端配置
+### ** Android端配置 **
 
-* 1.在项目的android/app/main目录下新建Jnilibs目录，并拷贝libmsc.so。
+* 1.在项目的android/app/main目录下新建Jnilibs目录，并将demo/libs下的arm64-v8a和armeabi-v7a两个目录拷贝进去。
 
 * 2.添加用户权限
   在工程 AndroidManifest.xml 文件中添加如下权限
@@ -54,7 +54,7 @@
 -keepattributes Signature
 ```
 
-### IOS端配置
+### ** IOS端配置 **
 1.在info.plist中添加以下权限
 ```
 <key>NSMicrophoneUsageDescription</key>
@@ -69,22 +69,23 @@
 
 **注：建议真机测试。如果非要用模拟器，则使用Xcode打开项目。在Build Settings中找到Excluded Architectures,在debug中添加支持arm64架构。**
 
-### 使用
-* 1.添加依赖
+### ** 添加依赖 **
 ```
 dependencies:
   speech_xf: ^0.0.1
 
 ```
-* 2.初始化
+
+### ** 使用 **
+
+* 1.初始化
 ```
-/// 初始化SDK
   void initSdk() async {
     await SpeechXf.init('这里是你在讯飞平台申请的appid');
   }
   ```
 
-  * 3.使用内置界面
+  * 2.使用内置界面
   ```
   await SpeechXf.openNativeUIDialog(
     isDynamicCorrection: true,
@@ -95,7 +96,7 @@ dependencies:
   );
   ```
 
-  * 4.无UI语音识别
+  * 3.无界面语音识别
   ```
   await SpeechXf.startListening(
     isDynamicCorrection: false,
@@ -106,17 +107,17 @@ dependencies:
   );
   ```
 
-  * 5.停止
+  * 4.停止
   ```
   await SpeechXf.stopListening();
   ```
 
-  * 6.取消
+  * 5.取消
   ```
    await SpeechXf.cancelListening();
   ```
 
-  * 7.语音听写结果监听
+  * 6.语音听写结果监听
   ```
   SpeechXf().onResult().listen((event) {
     if (event.error != null) {
@@ -132,12 +133,12 @@ dependencies:
   });
   ```
 
-  * 8.上传用户热词
+  * 7.上传用户热词
   ```
   await SpeechXf.uploadUserWords(userWords);
   ```
 
-  * 9.音频流识别
+  * 8.音频流识别
   ```
   await SpeechXf.audioRecognizer('iattest.wav');
   ```
