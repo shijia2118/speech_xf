@@ -204,11 +204,8 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     PermissionUtil.storage(
       context,
       action: () async {
-        String? result = await SpeechXf.audioRecognizer('iattest.wav');
-        if (result != null) {
-          speechController.clear();
-          speechController.text = result;
-        }
+        speechController.clear();
+        await SpeechXf.audioRecognizer('iattest.wav');
       },
     );
   }
