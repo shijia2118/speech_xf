@@ -52,6 +52,8 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   private MethodChannel channel;
   public static EventChannel.EventSink mEventSink = null;
+  public static EventChannel.EventSink mTtsEventSink = null;
+
 
   private Context mContext;
 
@@ -91,6 +93,9 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     EventChannel eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text_stream");
     eventChannel.setStreamHandler(this);
+
+    EventChannel ttsEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_text_to_speech_stream");
+    ttsEventChannel.setStreamHandler(this);
   }
 
   @Override
@@ -219,6 +224,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         voicer = call.argument("voiceName");
         content = call.argument("content");
         streamType = call.argument("streamType");
+        type = "3";
         if(mTts != null){
           startSpeaking();
         }else{
@@ -248,12 +254,14 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         if(mTts != null) {
           result.success(mTts.destroy());
         }
+        type = "";
         break;
       case "iat_destroy":
         ///销毁语音识别器
         if(mIat != null) {
           result.success(mIat.destroy());
         }
+        type = "";
         break;
       default:
         result.notImplemented();
@@ -339,7 +347,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         HashMap<String,Object> map =new HashMap<>();
         map.put("result",recognizerResult);
         map.put("success", true);
-        map.put("isLast", isLast);
+        map.put("isLast", true);
         map.put("type", type);
         mEventSink.success(map);
       }
@@ -515,17 +523,17 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onSpeakBegin() {
-      showTip("开始播放");
+      Log.d(TAG,"开始播放");
     }
 
     @Override
     public void onSpeakPaused() {
-      showTip("暂停播放");
+      Log.d(TAG,"暂停播放");
     }
 
     @Override
     public void onSpeakResumed() {
-      showTip("继续播放");
+      Log.d(TAG,"继续播放");
     }
 
     @Override
@@ -543,9 +551,11 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onCompleted(SpeechError error) {
-      showTip("播放完成");
+      Log.d(TAG,"播放完成");
       if (error != null) {
         showTip(error.getPlainDescription(true));
+      }else{
+        mTtsEventSink.success("onCompleted");
       }
     }
 
@@ -593,11 +603,16 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   @Override
   public void onListen(Object arguments, EventChannel.EventSink events) {
+    mTtsEventSink = events;
     mEventSink = events;
   }
 
   @Override
   public void onCancel(Object arguments) {
-
+    if(type.equals("1") || type.equals("2")){
+      mEventSink = null;
+    } else if(type.equals("3")){
+      mTtsEventSink = null;
+    }
   }
 }

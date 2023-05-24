@@ -6,15 +6,22 @@ import 'package:speech_xf/speech_result.dart';
 class SpeechXf {
   static const methodChannel = MethodChannel('xf_speech_to_text');
 
-  static const eventChannel = EventChannel('xf_speech_to_text_stream');
+  static const iatEventChannel = EventChannel('xf_speech_to_text_stream');
 
-  static Stream<Map<String, Object>> onGetResult = eventChannel
+  static const ttsEventChannel = EventChannel('xf_text_to_speech_stream');
+
+  static Stream<Map<String, Object>> onGetResult = iatEventChannel
       .receiveBroadcastStream()
       .asBroadcastStream()
       .map<Map<String, Object>>((element) => element.cast<String, Object>());
 
+  static Stream<void> onGetTtsResult = ttsEventChannel.receiveBroadcastStream().asBroadcastStream();
+
   StreamController<SpeechResult>? receiveStream;
   StreamSubscription<Map<String, Object>>? subscription;
+
+  StreamController<void>? receiveTtsStream;
+  StreamSubscription<void>? ttsSubscription;
 
   /// 获取翻译结果流
   Stream<SpeechResult> onResult() {
@@ -26,6 +33,17 @@ class SpeechXf {
       });
     }
     return receiveStream!.stream;
+  }
+
+  /// 语音播放结束回调
+  Stream<void> onCompeleted() {
+    if (receiveTtsStream == null) {
+      receiveTtsStream = StreamController();
+      ttsSubscription = onGetTtsResult.listen((event) {
+        receiveTtsStream?.add(event);
+      });
+    }
+    return receiveTtsStream!.stream;
   }
 
   /// 初始化

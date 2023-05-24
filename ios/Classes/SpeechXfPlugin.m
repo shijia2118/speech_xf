@@ -1,14 +1,17 @@
 #import "SpeechXfPlugin.h"
-#import "IATConfig.h"
 #import "IFlyMSC/IFlyMSC.h"
 #import "ISRDataHelper.h"
 #import "ToastView.h"
-#import "SpeechXfStream.h"
 #import "TTSConfig.h"
+#import "IATConfig.h"
+#import "SpeechXfStream.h"
+#import "SpeechTtsStream.h"
 
 @implementation SpeechXfPlugin
 
 SpeechXfStream *streamInstance;
+SpeechTtsStream *ttsStreamInstance;
+
 NSString *type = @"";
 
 NSObject<FlutterPluginRegistrar> *flutterPluginRegistrar;
@@ -27,6 +30,10 @@ NSString *pcmFilePath = @"";
     FlutterEventChannel *eventChanel = [FlutterEventChannel eventChannelWithName:@"xf_speech_to_text_stream" binaryMessenger:[registrar messenger]];
     streamInstance = [SpeechXfStream sharedInstance];
     [eventChanel setStreamHandler:[streamInstance streamHandler]];
+    
+    FlutterEventChannel *ttsEventChanel = [FlutterEventChannel eventChannelWithName:@"xf_text_to_speech_stream" binaryMessenger:[registrar messenger]];
+    ttsStreamInstance = [SpeechTtsStream sharedInstance];
+    [ttsEventChanel setStreamHandler:[ttsStreamInstance ttsStreamHandler]];
 }
 
 
@@ -58,7 +65,37 @@ NSString *pcmFilePath = @"";
         [self audioRecognizer:call.arguments];
     } else if([@"start_speaking" isEqualToString:call.method]){
         // 开始语音合成
+        type = @"3";
         [self startSpeaking:call.arguments];
+    } else if([@"stop_speaking" isEqualToString:call.method]){
+        // 取消语音合成
+        [self stopSpeaking];
+    } else if([@"pause_speaking" isEqualToString:call.method]){
+        // 暂停语音合成
+        [self pauseSpeaking];
+    } else if([@"resume_speaking" isEqualToString:call.method]){
+        // 继续语音合成
+        [self resumeSpeaking];
+    } else if([@"is_speaking" isEqualToString:call.method]) {
+        // 获取播放状态
+        if(_iFlySpeechSynthesizer != nil) {
+            BOOL isSpeaking = [_iFlySpeechSynthesizer isSpeaking];
+            if(isSpeaking) {
+                result([NSNumber numberWithBool:YES]);
+            } else {
+                result([NSNumber numberWithBool:NO]);
+            }
+        }
+    } else if([@"tts_destroy" isEqualToString:call.method ]){
+        if([_iFlySpeechSynthesizer isSpeaking]){
+            [_iFlySpeechSynthesizer stopSpeaking];
+        }
+        _iFlySpeechSynthesizer = nil;
+        type = @"";
+    } else if([@"iat_destroy" isEqualToString:call.method ]){
+        [_iflyRecognizerView cancel];
+        [_iFlySpeechRecognizer destroy];
+        type = @"";
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -268,12 +305,40 @@ NSString *pcmFilePath = @"";
  * 开始语音合成
  */
 - (void) startSpeaking:(NSDictionary*) args {
-    if(_iFlySpeechSynthesizer == nil){
-        [self initSynthesizer:args];
-    }
+    [self initSynthesizer:args];
     NSString *content = args[@"content"];
     [_iFlySpeechSynthesizer startSpeaking:content];
 }
+
+/**
+ * 取消语音合成
+ */
+- (void) stopSpeaking {
+    if(_iFlySpeechSynthesizer != nil){
+        [_iFlySpeechSynthesizer stopSpeaking];
+    }
+}
+
+/**
+ * 暂停语音合成
+ */
+- (void) pauseSpeaking {
+    if(_iFlySpeechSynthesizer != nil){
+        [_iFlySpeechSynthesizer pauseSpeaking];
+    }
+}
+
+/**
+ * 继续语音合成
+ */
+- (void) resumeSpeaking {
+    if(_iFlySpeechSynthesizer != nil){
+        [_iFlySpeechSynthesizer resumeSpeaking];
+    }
+}
+
+
+
 
 /**
  * 初始化语音合成识别器
@@ -322,32 +387,6 @@ NSString *pcmFilePath = @"";
 
     //输入文本编码格式
     [_iFlySpeechSynthesizer setParameter:@"unicode" forKey:[IFlySpeechConstant TEXT_ENCODING]];
-    
-
-    
-    //set xtts params
-    [_iFlySpeechSynthesizer setParameter:@"1" forKey:@"rdn"];
-    [_iFlySpeechSynthesizer setParameter:@"0" forKey:@"effect"];
-    [_iFlySpeechSynthesizer setParameter:@"0" forKey:@"rcn"];
- 
-    
-    //下面代码表示根据发音人名称从 languageDic 中选择发音文本；如果发音人不在该字典中，
-    //则默认使用中文发音。
-    NSDictionary* languageDic=@{@"catherine":@"text_english",//English
-                                @"XiaoYun":@"text_vietnam",//Vietnamese
-                                @"Abha":@"text_hindi",//Hindi
-                                @"Gabriela":@"text_spanish",//Spanish
-                                @"Allabent":@"text_russian",//Russian
-                                @"Mariane":@"text_french"};//French
-    
-    NSString* textNameKey=[languageDic valueForKey:instance.vcnName];
-    NSString* textSample=nil;
-    
-    if(textNameKey && [textNameKey length]>0){
-        textSample=NSLocalizedStringFromTable(textNameKey, @"tts/tts", nil);
-    }else{
-        textSample=NSLocalizedStringFromTable(@"text_chinese", @"tts/tts", nil);
-    }
 }
 
 /**
@@ -386,6 +425,10 @@ NSString *pcmFilePath = @"";
     NSLog(@"%s",__func__);
     NSString *text ;
     if (error.errorCode != 0 ) {
+        if([type isEqual: @"3"]){
+            [ToastView showToastWithMessage:error.description duration:2];
+            return;
+        }
         text = [NSString stringWithFormat:@"Error：%d %@", error.errorCode,error.errorDesc];
        
         NSMutableDictionary *resdic = [NSMutableDictionary dictionaryWithCapacity:1];
@@ -395,6 +438,10 @@ NSString *pcmFilePath = @"";
         [resdic setObject:text forKey:@"error"];
         [streamInstance streamHandler].eventSink(resdic);
 
+    }else{
+        if([type isEqual:@"3"]){
+            [ttsStreamInstance ttsStreamHandler].ttsEventSink(@"compeleted");
+        }
     }
 }
 
@@ -429,6 +476,29 @@ NSString *pcmFilePath = @"";
     type = @"";
     [_pcmRecorder stop];
 }
+
+/**
+ * 开始语音合成
+ */
+- (void)onSpeakBegin {
+    NSLog(@"===============>开始语音合成");
+}
+
+/**
+ * 缓冲进度
+ */
+- (void)onBufferProgress:(int)progress message:(NSString *)msg{
+    
+}
+
+/**
+ * 播放进度
+ */
+- (void)onSpeakProgress:(int)progress beginPos:(int)beginPos endPos:(int)endPos{
+//    NSLog(@"speak progress %2d%%, beginPos=%d, endPos=%d", progress,beginPos,endPos);
+}
+
+
 
 
 - (void)onIFlyRecorderBuffer:(const void *)buffer bufferSize:(int)size {

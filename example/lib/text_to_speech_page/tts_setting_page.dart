@@ -1,8 +1,5 @@
-import 'dart:math';
-
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:oktoast/oktoast.dart';
 import 'package:speech_xf_example/constants.dart';
 
 class TtsSettingPage extends StatefulWidget {

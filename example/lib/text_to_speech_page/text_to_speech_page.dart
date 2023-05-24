@@ -25,6 +25,15 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     super.initState();
     initSdk();
     textEditingController.text = kSpeechSynthesisDefaultText;
+
+    loopSpeech();
+  }
+
+  ///循环播放
+  void loopSpeech() {
+    SpeechXf().onCompeleted().listen((event) async {
+      await startSpeaking();
+    });
   }
 
   @override
@@ -135,7 +144,7 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
   }
 
   /// 开始合成
-  void startSpeaking() async {
+  Future<void> startSpeaking() async {
     await SpeechXf.startSpeaking(
       content: textEditingController.text,
       speed: speed,
