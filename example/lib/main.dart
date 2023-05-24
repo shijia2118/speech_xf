@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:oktoast/oktoast.dart';
-
-import 'package:speech_xf_example/speech_to_text_page/speech_2_text_page.dart';
+import 'package:speech_xf_example/home_page.dart';
 
 void main() {
   runApp(const MyApp());
+  //设置沉浸式状态栏，颜色透明
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+  SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarBrightness: Brightness.light, //白色图标
+    systemNavigationBarColor: Colors.white,
+  );
+  SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +36,7 @@ class MyApp extends StatelessWidget {
                 FocusManager.instance.primaryFocus?.unfocus();
               }
             },
-            child: const Speech2TextPage(),
+            child: const HomePage(),
           ),
         ),
       ),

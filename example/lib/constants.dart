@@ -1,3 +1,5 @@
+const String appId = "e47801bc"; //这里是你在讯飞平台申请的appid
+
 const List<Map<String, String>> kLanguages = [
   {'zh_cn': "中文"},
   {'en_us': '英文'},
@@ -79,3 +81,31 @@ extension GetPttValue on String {
     }
   }
 }
+
+const kSpeechSynthesisDefaultText =
+    "科大讯飞作为智能语音技术供应商，在智能语音技术领域有着长期的研究积累，并在中文语音合成、语音识别、口语评测等多项技术上拥有技术成果。科大讯飞是我国以语言技术为产业化方向的'国家863计划产业化基地。'";
+
+///音频流类型
+const kStreamTypes = ['通话', '系统', '铃声', '音乐', '闹铃', '通知'];
+
+///发音人列表
+const kVoicerList = {
+  'xiaoyan': '小燕—女青、中英、普通话',
+  'xiaoyu': '小宇—男青、中英、普通话',
+  'catherine': '凯瑟琳—女青、英',
+  'henry': '亨利—男青、英',
+  'vimary': '玛丽—女青、英',
+  'vixy': '小研—女青、中英、普通话',
+  'xiaoqi': '小琪—女青、中英、普通话',
+  'vixf': '小峰—男青、中英、普通话',
+  'xiaomei': '小梅—女青、中英、粤语',
+  'xiaolin': '小莉—女青、中英、台湾普通话',
+  'xiaorong': '小蓉—女青、中、四川话',
+  'xiaoqian': '小芸—女青、中、东北话',
+  'xiaokun': '小坤—男青、中、河南话',
+  'xiaoqiang': '小强—男青、中、湖南话',
+  'vixying': '小莹—女青、中、陕西话',
+  'xiaoxin': '小新—男童、中、普通话',
+  'nannan': '楠楠—女童、中、普通话',
+  'vils': '老孙—男老、中、普通话',
+};

@@ -2,6 +2,7 @@ package com.example.speech_xf;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,8 +16,11 @@ import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.Setting;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechEvent;
 import com.iflytek.cloud.SpeechRecognizer;
+import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SpeechUtility;
+import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.cloud.ui.RecognizerDialog;
 import com.iflytek.cloud.ui.RecognizerDialogListener;
 
@@ -24,6 +28,7 @@ import com.iflytek.cloud.ui.RecognizerDialogListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -51,7 +56,9 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private Context mContext;
 
   private final String TAG = "============>xf_log:";
+
   private SpeechRecognizer mIat;
+
   private Toast mToast;
   int ret = 0;// 函数调用返回值
   String language = "zh_cn";
@@ -63,6 +70,19 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private final HashMap<String, String> mIatResults = new LinkedHashMap<>();
 
   String type = "";
+
+  private SpeechSynthesizer mTts; // 语音合成对象
+  // 默认发音人
+  private String voicer = "xiaoyan";
+  private String speed = "50"; //语速
+  private String pitch = "50"; //音调
+  private String volume = "50"; //音量
+  private String content = ""; //播放内容
+  private String streamType = "3"; //音频流类型
+
+
+//  private File pcmFile;
+
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -188,6 +208,51 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         } catch (IOException e) {
           mIat.cancel();
           showTip("读取音频流失败");
+        }
+        break;
+      case "start_speaking":
+        ///开始语音合成
+        //接收参数
+        speed = call.argument("speed");
+        volume = call.argument("volume");
+        pitch = call.argument("pitch");
+        voicer = call.argument("voiceName");
+        content = call.argument("content");
+        streamType = call.argument("streamType");
+        if(mTts != null){
+          startSpeaking();
+        }else{
+          mTts = SpeechSynthesizer.createSynthesizer(mContext, mTtsInitListener);
+        }
+        break;
+      case "stop_speaking":
+        ///取消播放
+        if(mTts != null) mTts.stopSpeaking();
+        break;
+      case "pause_speaking":
+        ///暂停播放
+        if(mTts != null) mTts.pauseSpeaking();
+        break;
+      case "resume_speaking":
+        ///继续播放
+        if(mTts != null) mTts.resumeSpeaking();
+        break;
+      case "is_speaking":
+        ///是否播放中
+        if(mTts != null) {
+          result.success(mTts.isSpeaking());
+        }
+        break;
+      case "tts_destroy":
+        ///销毁语音合成器
+        if(mTts != null) {
+          result.success(mTts.destroy());
+        }
+        break;
+      case "iat_destroy":
+        ///销毁语音识别器
+        if(mIat != null) {
+          result.success(mIat.destroy());
         }
         break;
       default:
@@ -378,6 +443,127 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     Log.d(TAG,"path=="+path);
     mIat.setParameter(SpeechConstant.ASR_AUDIO_PATH,path);
   }
+
+  /**
+   * 设置语音合成参数
+   */
+  private void setSynthesisParams(){
+    // 清空参数
+    mTts.setParameter(SpeechConstant.PARAMS, null);
+    // 根据合成引擎设置相应参数
+    mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_CLOUD);
+
+    // 设置在线合成发音人
+    mTts.setParameter(SpeechConstant.VOICE_NAME, voicer);
+    //设置合成语速
+    mTts.setParameter(SpeechConstant.SPEED, speed);
+    //设置合成音调
+    mTts.setParameter(SpeechConstant.PITCH, pitch);
+    //设置合成音量
+    mTts.setParameter(SpeechConstant.VOLUME, volume);
+    //设置播放器音频流类型
+    mTts.setParameter(SpeechConstant.STREAM_TYPE, streamType);
+    // 设置播放合成音频打断音乐播放，默认为true
+    mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "false");
+
+    // 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
+    mTts.setParameter(SpeechConstant.AUDIO_FORMAT, "pcm");
+    mTts.setParameter(SpeechConstant.TTS_AUDIO_PATH,
+            mContext.getExternalFilesDir("msc").getAbsolutePath() + "/tts.pcm");
+
+  }
+
+  /**
+   * 开始语音合成
+   */
+  private void startSpeaking(){
+//    pcmFile = new File(mContext.getExternalCacheDir().getAbsolutePath(), "tts_pcmFile.pcm");
+//    pcmFile.delete();
+
+    //设置参数
+    setSynthesisParams();
+    // 合成并播放
+    int resultCode = mTts.startSpeaking(content, mTtsListener);
+    if (resultCode != ErrorCode.SUCCESS) {
+      showTip("语音合成失败,错误码: " + resultCode + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
+    }
+  }
+
+  /**
+   * 初始化监听。
+   */
+  private final InitListener mTtsInitListener = new InitListener() {
+    @Override
+    public void onInit(int code) {
+      Log.d(TAG, "InitListener init() code = " + code);
+      if (code != ErrorCode.SUCCESS) {
+        showTip("初始化失败,错误码：" + code + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
+      } else {
+        // 初始化成功，之后可以调用startSpeaking方法
+        // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
+        // 正确的做法是将onCreate中的startSpeaking调用移至这里
+        startSpeaking();
+      }
+    }
+  };
+
+
+  /**
+   * 合成回调监听。
+   */
+  private final SynthesizerListener mTtsListener = new SynthesizerListener() {
+
+    @Override
+    public void onSpeakBegin() {
+      showTip("开始播放");
+    }
+
+    @Override
+    public void onSpeakPaused() {
+      showTip("暂停播放");
+    }
+
+    @Override
+    public void onSpeakResumed() {
+      showTip("继续播放");
+    }
+
+    @Override
+    public void onBufferProgress(int percent, int beginPos, int endPos,
+                                 String info) {
+      // 合成进度
+      Log.d(TAG,"缓冲进度:"+percent);
+    }
+
+    @Override
+    public void onSpeakProgress(int percent, int beginPos, int endPos) {
+      // 播放进度
+      Log.d(TAG,"播放进度:"+percent);
+    }
+
+    @Override
+    public void onCompleted(SpeechError error) {
+      showTip("播放完成");
+      if (error != null) {
+        showTip(error.getPlainDescription(true));
+      }
+    }
+
+    @Override
+    public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
+      //	 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
+      //	 若使用本地能力，会话id为null
+      if (SpeechEvent.EVENT_SESSION_ID == eventType) {
+        String sid = obj.getString(SpeechEvent.KEY_EVENT_SESSION_ID);
+        Log.d(TAG, "session id =" + sid);
+      }
+      // 当设置 SpeechConstant.TTS_DATA_NOTIFY 为1时，抛出buf数据
+      if (SpeechEvent.EVENT_TTS_BUFFER == eventType) {
+        byte[] buf = obj.getByteArray(SpeechEvent.KEY_EVENT_TTS_BUFFER);
+        Log.e(TAG, "EVENT_TTS_BUFFER = " + buf.length);
+      }
+    }
+  };
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {

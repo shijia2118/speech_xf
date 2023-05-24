@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:speech_xf/speech_xf.dart';
+import 'package:speech_xf_example/constants.dart';
 
 import '../utils/permission_util.dart';
 import 'setting_page.dart';
@@ -50,6 +51,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     super.dispose();
     speechController.dispose();
     userWordsController.dispose();
+    SpeechXf.iatDestroy();
   }
 
   @override
@@ -124,8 +126,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
 
   /// 初始化SDK
   void initSdk() async {
-    // await SpeechXf.init('这里是你在讯飞平台申请的appid');
-    await SpeechXf.init('e47801bc');
+    await SpeechXf.init(appId);
   }
 
   /// 跳转到设置页面

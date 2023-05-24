@@ -4,6 +4,7 @@
 #import "ISRDataHelper.h"
 #import "ToastView.h"
 #import "SpeechXfStream.h"
+#import "TTSConfig.h"
 
 @implementation SpeechXfPlugin
 
@@ -55,6 +56,9 @@ NSString *pcmFilePath = @"";
     } else if([@"audio_recognizer" isEqualToString:call.method]){
         // 音频流识别
         [self audioRecognizer:call.arguments];
+    } else if([@"start_speaking" isEqualToString:call.method]){
+        // 开始语音合成
+        [self startSpeaking:call.arguments];
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -203,7 +207,7 @@ NSString *pcmFilePath = @"";
 
 
 /**
- * 初始化识别器
+ * 初始化语音听写识别器
  */
 -(void) initRecognizer :(NSDictionary*) args{
     NSLog(@"%s",__func__);
@@ -258,6 +262,92 @@ NSString *pcmFilePath = @"";
     _pcmRecorder.delegate = self;
     [_pcmRecorder setSample:[IATConfig sharedInstance].sampleRate];
     [_pcmRecorder setSaveAudioPath:nil];    //not save the
+}
+
+/**
+ * 开始语音合成
+ */
+- (void) startSpeaking:(NSDictionary*) args {
+    if(_iFlySpeechSynthesizer == nil){
+        [self initSynthesizer:args];
+    }
+    NSString *content = args[@"content"];
+    [_iFlySpeechSynthesizer startSpeaking:content];
+}
+
+/**
+ * 初始化语音合成识别器
+ */
+- (void)initSynthesizer:(NSDictionary*) args {
+    TTSConfig *instance = [TTSConfig sharedInstance];
+    if (instance == nil) {
+        return;
+    }
+    
+    NSString *volume = args[@"volume"];
+    NSString *pitch = args[@"pitch"];
+    NSString *speed = args[@"speed"];
+    NSString *voiceName = args[@"voiceName"];
+
+    //TTS单例
+    if (_iFlySpeechSynthesizer == nil) {
+        _iFlySpeechSynthesizer = [IFlySpeechSynthesizer sharedInstance];
+    }
+    
+    _iFlySpeechSynthesizer.delegate = self;
+    
+    [_iFlySpeechSynthesizer setParameter:@"" forKey:[IFlySpeechConstant PARAMS]];
+    
+    //设置在线工作方式
+    [_iFlySpeechSynthesizer setParameter:[IFlySpeechConstant TYPE_CLOUD] forKey:[IFlySpeechConstant ENGINE_TYPE]];
+
+    //设置音量，取值范围 0~100
+    [_iFlySpeechSynthesizer setParameter:volume forKey:[IFlySpeechConstant VOLUME]];
+    
+    //音调，范围（0~100）
+    [_iFlySpeechSynthesizer setParameter:pitch forKey:[IFlySpeechConstant PITCH]];
+    
+    //语速
+    [_iFlySpeechSynthesizer setParameter:speed forKey:[IFlySpeechConstant SPEED]];
+    
+    //发音人，默认为”xiaoyan”，可以设置的参数列表可参考“合成发音人列表”
+    [_iFlySpeechSynthesizer setParameter:voiceName forKey: [IFlySpeechConstant VOICE_NAME]];
+    NSLog(@"发音人：%@",instance.vcnName);
+    
+    //合成、识别、唤醒、评测、声纹等业务采样率。
+    [_iFlySpeechSynthesizer setParameter:@"16000" forKey:[IFlySpeechConstant SAMPLE_RATE]];
+    
+    //保存合成文件名，如不再需要，设置为nil或者为空表示取消，默认目录位于library/cache下
+    [_iFlySpeechSynthesizer setParameter:@" tts.pcm" forKey: nil];
+
+    //输入文本编码格式
+    [_iFlySpeechSynthesizer setParameter:@"unicode" forKey:[IFlySpeechConstant TEXT_ENCODING]];
+    
+
+    
+    //set xtts params
+    [_iFlySpeechSynthesizer setParameter:@"1" forKey:@"rdn"];
+    [_iFlySpeechSynthesizer setParameter:@"0" forKey:@"effect"];
+    [_iFlySpeechSynthesizer setParameter:@"0" forKey:@"rcn"];
+ 
+    
+    //下面代码表示根据发音人名称从 languageDic 中选择发音文本；如果发音人不在该字典中，
+    //则默认使用中文发音。
+    NSDictionary* languageDic=@{@"catherine":@"text_english",//English
+                                @"XiaoYun":@"text_vietnam",//Vietnamese
+                                @"Abha":@"text_hindi",//Hindi
+                                @"Gabriela":@"text_spanish",//Spanish
+                                @"Allabent":@"text_russian",//Russian
+                                @"Mariane":@"text_french"};//French
+    
+    NSString* textNameKey=[languageDic valueForKey:instance.vcnName];
+    NSString* textSample=nil;
+    
+    if(textNameKey && [textNameKey length]>0){
+        textSample=NSLocalizedStringFromTable(textNameKey, @"tts/tts", nil);
+    }else{
+        textSample=NSLocalizedStringFromTable(@"text_chinese", @"tts/tts", nil);
+    }
 }
 
 /**
