@@ -72,7 +72,7 @@
 ### **添加依赖**
 ```
 dependencies:
-  speech_xf: ^0.0.4
+  speech_xf: ^0.0.5
 
 ```
 
@@ -141,4 +141,41 @@ dependencies:
   * 8.音频流识别
   ```
   await SpeechXf.audioRecognizer('iattest.wav');
+  ```
+
+  * 9.开始语音合成
+  ```
+  await SpeechXf.startSpeaking();
+  ```
+
+  * 10.取消语音合成
+  ```
+  await SpeechXf.stopSpeaking();
+  ```
+
+  * 11.暂停语音合成
+  ```
+  await SpeechXf.pauseSpeaking();
+  ```
+
+  * 12.继续语音合成
+  ```
+  await SpeechXf.resumeSpeaking();
+  ```
+
+  * 13.循环播放
+  ```
+  SpeechXf().onCompeleted().listen((event) async {
+      await startSpeaking();
+    });
+  ```
+
+  * 14.销毁语音合成器
+  ```
+  SpeechXf.ttsDestroy();
+  ```
+
+  * 15.销毁语音识别器
+  ```
+  SpeechXf.iatDestroy();
   ```

@@ -2,7 +2,6 @@ package com.example.speech_xf;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.SpannableStringBuilder;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,7 +27,6 @@ import com.iflytek.cloud.ui.RecognizerDialogListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -37,6 +35,7 @@ import java.util.Objects;
 
 import io.flutter.BuildConfig;
 import io.flutter.Log;
+import io.flutter.embedding.engine.loader.FlutterLoader;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -48,13 +47,11 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.FlutterMain;
 
 /** SpeechXfPlugin */
-public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware ,EventChannel.StreamHandler{
+public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
 
   private MethodChannel channel;
-  public static EventChannel.EventSink mEventSink = null;
+  public static EventChannel.EventSink mIatEventSink = null;
   public static EventChannel.EventSink mTtsEventSink = null;
-
-
   private Context mContext;
 
   private final String TAG = "============>xf_log:";
@@ -82,20 +79,16 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private String content = ""; //播放内容
   private String streamType = "3"; //音频流类型
 
-
-//  private File pcmFile;
-
-
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text");
     channel.setMethodCallHandler(this);
 
-    EventChannel eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text_stream");
-    eventChannel.setStreamHandler(this);
+    EventChannel iatEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text_stream");
+    iatEventChannel.setStreamHandler(iatStreamHandler);
 
     EventChannel ttsEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_text_to_speech_stream");
-    ttsEventChannel.setStreamHandler(this);
+    ttsEventChannel.setStreamHandler(ttsStreamHandler);
   }
 
   @Override
@@ -111,7 +104,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         type = "1";
         mIatResults.clear();
         /// 显示SDK内置对话框
-        if(mIat!=null){
+        if (mIat != null) {
           mIat.setParameter(SpeechConstant.PARAMS, null);
         }
         RecognizerDialog mIatDialog = new RecognizerDialog(mContext, mInitListener);
@@ -120,20 +113,20 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         // 动态修正仅支持中文,默认不开启。
         // 设置语言
         language = call.argument("language");
-        mIatDialog.setParameter(SpeechConstant.LANGUAGE,language);
+        mIatDialog.setParameter(SpeechConstant.LANGUAGE, language);
         isDynamicCorrection = call.argument("isDynamicCorrection");
-        if (isDynamicCorrection != null && isDynamicCorrection&& Objects.equals(language, "zh_cn")) {
+        if (isDynamicCorrection != null && isDynamicCorrection && Objects.equals(language, "zh_cn")) {
           mIatDialog.setParameter("dwa", "wpgs");
         }
         //前端点超时
         vadBos = call.argument("vadBos");
-        mIatDialog.setParameter(SpeechConstant.VAD_BOS,vadBos);
+        mIatDialog.setParameter(SpeechConstant.VAD_BOS, vadBos);
         // 后端点超时
         vadEos = call.argument("vadEos");
-        mIatDialog.setParameter(SpeechConstant.VAD_EOS,vadEos);
+        mIatDialog.setParameter(SpeechConstant.VAD_EOS, vadEos);
         // 标点符号 0-无标点 1-有标点
         ptt = call.argument("ptt");
-        mIatDialog.setParameter(SpeechConstant.ASR_PTT,ptt);
+        mIatDialog.setParameter(SpeechConstant.ASR_PTT, ptt);
 
         mIatDialog.setListener(mRecognizerDialogListener);
         mIatDialog.show();
@@ -161,12 +154,12 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         break;
       case "stop_listening":
         /// 暂停听写
-        if(mIat!=null)
-        mIat.stopListening();
+        if (mIat != null)
+          mIat.stopListening();
         break;
       case "cancel_listening":
         /// 取消听写
-        if(mIat!=null)
+        if (mIat != null)
           mIat.cancel();
         break;
       case "upload_user_words":
@@ -174,7 +167,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         /// 与应用级热词相对。
         /// 一般上传后10分钟左右生效，影响的范围是，当前 appId 应用的当前设备——即同一应用，不同设备里上传的热词互不干扰；
         /// 同一设备，不同appId的应用上传的热词互不干扰。
-        if(mIat == null){
+        if (mIat == null) {
           mIat = SpeechRecognizer.createRecognizer(mContext, mInitListener);
         }
         String contents = call.argument("contents");
@@ -188,7 +181,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
       case "audio_recognizer":
         /// 音频流识别
         mIatResults.clear();
-        if(mIat == null){
+        if (mIat == null) {
           mIat = SpeechRecognizer.createRecognizer(mContext, mInitListener);
         }
         // 设置参数
@@ -202,7 +195,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         }
         try {
           String fileName = call.argument("path");
-          String key = FlutterMain.getLookupKeyForAsset("assets/"+fileName); // 获取 assets 中文件的 key
+          String key = FlutterMain.getLookupKeyForAsset("assets/" + fileName); // 获取 assets 中文件的 key
           InputStream open = mContext.getAssets().open(key);
           byte[] buff = new byte[1280];
           while (open.available() > 0) {
@@ -225,40 +218,40 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         content = call.argument("content");
         streamType = call.argument("streamType");
         type = "3";
-        if(mTts != null){
+        if (mTts != null) {
           startSpeaking();
-        }else{
+        } else {
           mTts = SpeechSynthesizer.createSynthesizer(mContext, mTtsInitListener);
         }
         break;
       case "stop_speaking":
         ///取消播放
-        if(mTts != null) mTts.stopSpeaking();
+        if (mTts != null) mTts.stopSpeaking();
         break;
       case "pause_speaking":
         ///暂停播放
-        if(mTts != null) mTts.pauseSpeaking();
+        if (mTts != null) mTts.pauseSpeaking();
         break;
       case "resume_speaking":
         ///继续播放
-        if(mTts != null) mTts.resumeSpeaking();
+        if (mTts != null) mTts.resumeSpeaking();
         break;
       case "is_speaking":
         ///是否播放中
-        if(mTts != null) {
+        if (mTts != null) {
           result.success(mTts.isSpeaking());
         }
         break;
       case "tts_destroy":
         ///销毁语音合成器
-        if(mTts != null) {
+        if (mTts != null) {
           result.success(mTts.destroy());
         }
         type = "";
         break;
       case "iat_destroy":
         ///销毁语音识别器
-        if(mIat != null) {
+        if (mIat != null) {
           result.success(mIat.destroy());
         }
         type = "";
@@ -282,7 +275,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
                 mContext,
                 "初始化失败，错误码：" + code + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案",
                 Toast.LENGTH_SHORT
-                ).show();
+        ).show();
       }
     }
   };
@@ -293,24 +286,24 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private final RecognizerDialogListener mRecognizerDialogListener = new RecognizerDialogListener() {
     // 返回结果
     public void onResult(RecognizerResult results, boolean isLast) {
-      String recognizerResult =  getRecognizerResult(results);
-      if(isLast){
-        HashMap<String,Object> map =new HashMap<>();
+      String recognizerResult = getRecognizerResult(results);
+      if (isLast) {
+        HashMap<String, Object> map = new HashMap<>();
         map.put("result", recognizerResult);
         map.put("success", true);
         map.put("isLast", true);
         map.put("type", type);
-        mEventSink.success(map);
+        mIatEventSink.success(map);
       }
     }
 
     // 识别回调错误
     public void onError(SpeechError error) {
-      HashMap<String,Object> map = new HashMap<>();
+      HashMap<String, Object> map = new HashMap<>();
       map.put("error", error.getPlainDescription(true));
       map.put("success", false);
       map.put("type", type);
-      mEventSink.success(map);
+      mIatEventSink.success(map);
     }
   };
 
@@ -327,11 +320,11 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onError(SpeechError error) {
-      HashMap<String,Object> map = new HashMap<>();
+      HashMap<String, Object> map = new HashMap<>();
       map.put("error", error.getPlainDescription(true));
       map.put("success", false);
       map.put("type", type);
-      mEventSink.success(map);
+      mIatEventSink.success(map);
     }
 
     @Override
@@ -342,14 +335,14 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onResult(RecognizerResult results, boolean isLast) {
-      String recognizerResult =  getRecognizerResult(results);
-      if(isLast){
-        HashMap<String,Object> map =new HashMap<>();
-        map.put("result",recognizerResult);
+      String recognizerResult = getRecognizerResult(results);
+      if (isLast) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("result", recognizerResult);
         map.put("success", true);
         map.put("isLast", true);
         map.put("type", type);
-        mEventSink.success(map);
+        mIatEventSink.success(map);
       }
     }
 
@@ -365,6 +358,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   /**
    * 读取动态修正返回结果示例代码
+   *
    * @param recognizerResult:转写后的字符串
    */
   private String getRecognizerResult(RecognizerResult recognizerResult) {
@@ -388,7 +382,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
       int begin = Integer.parseInt(strings[0]);
       int end = Integer.parseInt(strings[1]);
       for (int i = begin; i <= end; i++) {
-        mIatResults.remove(i+"");
+        mIatResults.remove(i + "");
       }
     }
 
@@ -397,7 +391,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     for (String key : mIatResults.keySet()) {
       resultBuffer.append(mIatResults.get(key));
     }
-    Log.d(TAG,resultBuffer.toString());
+    Log.d(TAG, resultBuffer.toString());
     return resultBuffer.toString();
   }
 
@@ -448,14 +442,14 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     // 设置音频保存路径，保存音频格式支持pcm、wav.
     mIat.setParameter(SpeechConstant.AUDIO_FORMAT, "wav");
     String path = mContext.getExternalFilesDir("msc").getAbsolutePath() + "/iat.wav";
-    Log.d(TAG,"path=="+path);
-    mIat.setParameter(SpeechConstant.ASR_AUDIO_PATH,path);
+    Log.d(TAG, "path==" + path);
+    mIat.setParameter(SpeechConstant.ASR_AUDIO_PATH, path);
   }
 
   /**
    * 设置语音合成参数
    */
-  private void setSynthesisParams(){
+  private void setSynthesisParams() {
     // 清空参数
     mTts.setParameter(SpeechConstant.PARAMS, null);
     // 根据合成引擎设置相应参数
@@ -484,7 +478,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   /**
    * 开始语音合成
    */
-  private void startSpeaking(){
+  private void startSpeaking() {
 //    pcmFile = new File(mContext.getExternalCacheDir().getAbsolutePath(), "tts_pcmFile.pcm");
 //    pcmFile.delete();
 
@@ -500,18 +494,15 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   /**
    * 初始化监听。
    */
-  private final InitListener mTtsInitListener = new InitListener() {
-    @Override
-    public void onInit(int code) {
-      Log.d(TAG, "InitListener init() code = " + code);
-      if (code != ErrorCode.SUCCESS) {
-        showTip("初始化失败,错误码：" + code + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
-      } else {
-        // 初始化成功，之后可以调用startSpeaking方法
-        // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
-        // 正确的做法是将onCreate中的startSpeaking调用移至这里
-        startSpeaking();
-      }
+  private final InitListener mTtsInitListener = code -> {
+    Log.d(TAG, "InitListener init() code = " + code);
+    if (code != ErrorCode.SUCCESS) {
+      showTip("初始化失败,错误码：" + code + ",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
+    } else {
+      // 初始化成功，之后可以调用startSpeaking方法
+      // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
+      // 正确的做法是将onCreate中的startSpeaking调用移至这里
+      startSpeaking();
     }
   };
 
@@ -523,38 +514,38 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onSpeakBegin() {
-      Log.d(TAG,"开始播放");
+      Log.d(TAG, "开始播放");
     }
 
     @Override
     public void onSpeakPaused() {
-      Log.d(TAG,"暂停播放");
+      Log.d(TAG, "暂停播放");
     }
 
     @Override
     public void onSpeakResumed() {
-      Log.d(TAG,"继续播放");
+      Log.d(TAG, "继续播放");
     }
 
     @Override
     public void onBufferProgress(int percent, int beginPos, int endPos,
                                  String info) {
       // 合成进度
-      Log.d(TAG,"缓冲进度:"+percent);
+      Log.d(TAG, "缓冲进度:" + percent);
     }
 
     @Override
     public void onSpeakProgress(int percent, int beginPos, int endPos) {
       // 播放进度
-      Log.d(TAG,"播放进度:"+percent);
+      Log.d(TAG, "播放进度:" + percent);
     }
 
     @Override
     public void onCompleted(SpeechError error) {
-      Log.d(TAG,"播放完成");
+      Log.d(TAG, "播放完成");
       if (error != null) {
         showTip(error.getPlainDescription(true));
-      }else{
+      } else {
         mTtsEventSink.success("onCompleted");
       }
     }
@@ -601,18 +592,34 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   }
 
-  @Override
-  public void onListen(Object arguments, EventChannel.EventSink events) {
-    mTtsEventSink = events;
-    mEventSink = events;
-  }
+  /**
+   * 语音合成
+   */
+  EventChannel.StreamHandler ttsStreamHandler = new EventChannel.StreamHandler() {
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+      mTtsEventSink = events;
+    }
 
-  @Override
-  public void onCancel(Object arguments) {
-    if(type.equals("1") || type.equals("2")){
-      mEventSink = null;
-    } else if(type.equals("3")){
+    @Override
+    public void onCancel(Object arguments) {
       mTtsEventSink = null;
     }
-  }
+  };
+
+  /**
+   * 语音识别
+   */
+  EventChannel.StreamHandler iatStreamHandler = new EventChannel.StreamHandler() {
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+      mIatEventSink = events;
+    }
+
+    @Override
+    public void onCancel(Object arguments) {
+      mIatEventSink = null;
+    }
+  };
 }
+
