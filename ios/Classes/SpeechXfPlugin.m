@@ -4,8 +4,8 @@
 #import "ToastView.h"
 #import "TTSConfig.h"
 #import "IATConfig.h"
-#import "SpeechXfStream.h"
 #import "SpeechTtsStream.h"
+#import "SpeechXfStream.h"
 
 @implementation SpeechXfPlugin
 
