@@ -31,6 +31,7 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     super.initState();
     initSdk();
 
+    /// 语音识别结果监听
     SpeechXf.onSpeechResultListener(
       onSuccess: (result, isLast) {
         speechController.text = speechController.text + result;
@@ -41,6 +42,14 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
       onError: (error) {
         showToast(error);
       },
+    );
+
+    /// 音量变化监听
+    SpeechXf.onVolumeChanged(
+      volume: (v) {
+        showToast('当前音量:$v');
+      },
+      bytes: (bytes) {},
     );
   }
 

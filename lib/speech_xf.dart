@@ -5,9 +5,11 @@ import 'package:speech_xf/speech_result.dart';
 class SpeechXf {
   static const methodChannel = MethodChannel('xf_speech_to_text');
 
-  static const iatEventChannel = EventChannel('xf_speech_to_text_stream');
+  static const iatEventChannel = EventChannel('xf_speech_to_text_stream'); //语音识别通道
 
-  static const ttsEventChannel = EventChannel('xf_text_to_speech_stream');
+  static const ttsEventChannel = EventChannel('xf_text_to_speech_stream'); //语音合成通道
+
+  static const volumeEventChannel = EventChannel('volume_stream'); //声音变化通道
 
   static Stream<Map<String, Object>> onReveivedIatResult = iatEventChannel
       .receiveBroadcastStream()
@@ -15,6 +17,11 @@ class SpeechXf {
       .map<Map<String, Object>>((element) => element.cast<String, Object>());
 
   static Stream onReceivedTtsResult = ttsEventChannel.receiveBroadcastStream().asBroadcastStream();
+
+  static Stream<Map<String, Object>> onReveivedVolumeResult = volumeEventChannel
+      .receiveBroadcastStream()
+      .asBroadcastStream()
+      .map<Map<String, Object>>((element) => element.cast<String, Object>());
 
   /// 语音识别结果监听回调
   static Future onSpeechResultListener({
@@ -44,6 +51,20 @@ class SpeechXf {
     onReceivedTtsResult.listen((event) {
       if (event != null && event == 'onCompleted') {
         onCompeleted(event);
+      }
+    });
+  }
+
+  /// 声音变化回调
+  static Future onVolumeChanged({required Function(int) volume, required Function(List<int> byteArray) bytes}) async {
+    onReveivedVolumeResult.listen((event) {
+      var v = event['volume'];
+      var b = event['data'];
+      if (v != null && v is int) {
+        volume(v);
+      }
+      if (b != null && b is List<int>) {
+        bytes(b);
       }
     });
   }

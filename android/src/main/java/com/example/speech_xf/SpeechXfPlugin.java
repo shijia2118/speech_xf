@@ -52,6 +52,8 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private MethodChannel channel;
   public static EventChannel.EventSink mIatEventSink = null;
   public static EventChannel.EventSink mTtsEventSink = null;
+  public static EventChannel.EventSink volumeEventSink = null;
+
   private Context mContext;
 
   private final String TAG = "============>xf_log:";
@@ -89,6 +91,9 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     EventChannel ttsEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "xf_text_to_speech_stream");
     ttsEventChannel.setStreamHandler(ttsStreamHandler);
+
+    EventChannel volumeEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "volume_stream");
+    volumeEventChannel.setStreamHandler(volumeStreamHandler);
   }
 
   @Override
@@ -345,6 +350,10 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     @Override
     public void onVolumeChanged(int volume, byte[] data) {
 //        showTip("当前正在说话，音量大小 = " + volume + " 返回音频数据 = " + data.length);
+      HashMap<String, Object> map = new HashMap<>();
+      map.put("volume", volume);
+      map.put("data", data);
+      volumeEventSink.success(map);
     }
 
     @Override
@@ -615,6 +624,21 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     @Override
     public void onCancel(Object arguments) {
       mIatEventSink = null;
+    }
+  };
+
+  /**
+   * 音量变化
+   */
+  EventChannel.StreamHandler volumeStreamHandler = new EventChannel.StreamHandler() {
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+      volumeEventSink = events;
+    }
+
+    @Override
+    public void onCancel(Object arguments) {
+      volumeEventSink = null;
     }
   };
 }

@@ -6,11 +6,14 @@
 #import "IATConfig.h"
 #import "SpeechTtsStream.h"
 #import "SpeechXfStream.h"
+#import "SpeechVolumeStream.h"
 
 @implementation SpeechXfPlugin
 
 SpeechXfStream *streamInstance;
 SpeechTtsStream *ttsStreamInstance;
+SpeechVolumeStream *volumeStreamInstance;
+
 
 NSString *type = @"";
 
@@ -34,6 +37,10 @@ NSString *pcmFilePath = @"";
     FlutterEventChannel *ttsEventChanel = [FlutterEventChannel eventChannelWithName:@"xf_text_to_speech_stream" binaryMessenger:[registrar messenger]];
     ttsStreamInstance = [SpeechTtsStream sharedInstance];
     [ttsEventChanel setStreamHandler:[ttsStreamInstance ttsStreamHandler]];
+    
+    FlutterEventChannel *volumeEventChanel = [FlutterEventChannel eventChannelWithName:@"volume_stream" binaryMessenger:[registrar messenger]];
+    volumeStreamInstance = [SpeechVolumeStream sharedInstance];
+    [volumeEventChanel setStreamHandler:[volumeStreamInstance volumeStreamHandler]];
 }
 
 
@@ -456,8 +463,10 @@ NSString *pcmFilePath = @"";
 /*!
  *  音量回调0-30
  */
-- (void)onVolumeChanged:(int)volume buffer:(NSData *)buffer {
-    NSLog(@"volume:%d",volume);
+- (void) onVolumeChanged: (int)volume {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    [dictionary setObject:@(volume) forKey:@"volume"]; // 使用@(volume)将整型转换为NSNumber对象
+    [volumeStreamInstance volumeStreamHandler].volumeEventSink(dictionary);
 }
 
 /*!
