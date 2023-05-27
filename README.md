@@ -181,3 +181,13 @@ dependencies:
   ```
   SpeechXf.iatDestroy();
   ```
+
+  * 16.音量变化回调
+  ```
+  SpeechXf.onVolumeChanged(
+      volume: (v) {
+        showToast('当前音量:$v');
+      },
+      bytes: (bytes) {},
+    );
+    ```

@@ -1,6 +1,6 @@
 name: speech_xf
 description: 该插件集成了讯飞语音识别和语音合成功能。支持Android和IOS平台
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/shijia2118/speech_xf.git
 repository: https://github.com/shijia2118/speech_xf.git
 

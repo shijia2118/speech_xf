@@ -56,7 +56,7 @@ class SpeechXf {
   }
 
   /// 声音变化回调
-  static Future onVolumeChanged({required Function(int) volume, required Function(List<int> byteArray) bytes}) async {
+  static Future onVolumeChanged({required Function(int) volume, Function(List<int> byteArray)? bytes}) async {
     onReveivedVolumeResult.listen((event) {
       var v = event['volume'];
       var b = event['data'];
@@ -64,7 +64,9 @@ class SpeechXf {
         volume(v);
       }
       if (b != null && b is List<int>) {
-        bytes(b);
+        if (bytes != null) {
+          bytes(b);
+        }
       }
     });
   }
