@@ -16,7 +16,7 @@
     dispatch_once(&onceToken, ^{
         manager = [[SpeechXfStream alloc] init];
         SpeechXfStreamHanlder * streamHandler = [[SpeechXfStreamHanlder alloc] init];
-        manager.streamHandler = streamHandler;
+        manager.iatStreamHandler = streamHandler;
     });
     
     return manager;
@@ -27,12 +27,12 @@
 @implementation SpeechXfStreamHanlder
 
 - (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
-    self.eventSink = eventSink;
+    self.iatEventSink = eventSink;
     return nil;
 }
 
 - (FlutterError*)onCancelWithArguments:(id)arguments {
-    self.eventSink = nil;
+    self.iatEventSink = nil;
     return nil;
 }
 

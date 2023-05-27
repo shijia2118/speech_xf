@@ -27,9 +27,9 @@ NSString *pcmFilePath = @"";
   SpeechXfPlugin* instance = [[SpeechXfPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
   
-    FlutterEventChannel *eventChanel = [FlutterEventChannel eventChannelWithName:@"xf_speech_to_text_stream" binaryMessenger:[registrar messenger]];
+    FlutterEventChannel *iatEventChanel = [FlutterEventChannel eventChannelWithName:@"xf_speech_to_text_stream" binaryMessenger:[registrar messenger]];
     streamInstance = [SpeechXfStream sharedInstance];
-    [eventChanel setStreamHandler:[streamInstance streamHandler]];
+    [iatEventChanel setStreamHandler:[streamInstance iatStreamHandler]];
     
     FlutterEventChannel *ttsEventChanel = [FlutterEventChannel eventChannelWithName:@"xf_text_to_speech_stream" binaryMessenger:[registrar messenger]];
     ttsStreamInstance = [SpeechTtsStream sharedInstance];
@@ -412,8 +412,7 @@ NSString *pcmFilePath = @"";
         [resdic setObject: [NSNumber numberWithBool:YES] forKey:@"success"];
         [resdic setObject: [NSNumber numberWithBool:isLast] forKey:@"isLast"];
         [resdic setObject:resultFromJson forKey:@"result"];
-        [resdic setObject:type forKey:@"type"];
-        [streamInstance streamHandler].eventSink(resdic);
+        [streamInstance iatStreamHandler].iatEventSink(resdic);
     }
 }
 
@@ -434,13 +433,12 @@ NSString *pcmFilePath = @"";
         NSMutableDictionary *resdic = [NSMutableDictionary dictionaryWithCapacity:1];
         [resdic setObject: [NSNumber numberWithBool:NO] forKey:@"success"];
         [resdic setObject:@"" forKey:@"result"];
-        [resdic setObject:type forKey:@"type"];
         [resdic setObject:text forKey:@"error"];
-        [streamInstance streamHandler].eventSink(resdic);
+        [streamInstance iatStreamHandler].iatEventSink(resdic);
 
     }else{
         if([type isEqual:@"3"]){
-            [ttsStreamInstance ttsStreamHandler].ttsEventSink(@"compeleted");
+            [ttsStreamInstance ttsStreamHandler].ttsEventSink(@"onCompleted");
         }
     }
 }

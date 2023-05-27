@@ -26,14 +26,12 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     initSdk();
     textEditingController.text = kSpeechSynthesisDefaultText;
 
-    loopSpeech();
-  }
-
-  ///循环播放
-  void loopSpeech() {
-    SpeechXf().onCompeleted().listen((event) async {
-      await startSpeaking();
-    });
+    /// 循环播放
+    SpeechXf.onLoopSpeakingListener(
+      onCompeleted: (onCompeleted) async {
+        await startSpeaking();
+      },
+    );
   }
 
   @override

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:speech_xf/speech_result.dart';
 
@@ -10,40 +9,43 @@ class SpeechXf {
 
   static const ttsEventChannel = EventChannel('xf_text_to_speech_stream');
 
-  static Stream<Map<String, Object>> onGetResult = iatEventChannel
+  static Stream<Map<String, Object>> onReveivedIatResult = iatEventChannel
       .receiveBroadcastStream()
       .asBroadcastStream()
       .map<Map<String, Object>>((element) => element.cast<String, Object>());
 
-  static Stream<void> onGetTtsResult = ttsEventChannel.receiveBroadcastStream().asBroadcastStream();
+  static Stream onReceivedTtsResult = ttsEventChannel.receiveBroadcastStream().asBroadcastStream();
 
-  StreamController<SpeechResult>? receiveStream;
-  StreamSubscription<Map<String, Object>>? subscription;
-
-  StreamController<void>? receiveTtsStream;
-  StreamSubscription<void>? ttsSubscription;
-
-  /// 获取翻译结果流
-  Stream<SpeechResult> onResult() {
-    if (receiveStream == null) {
-      receiveStream = StreamController();
-      subscription = onGetResult.listen((Map<String, Object> event) {
-        Map<String, Object> newEvent = Map<String, Object>.of(event);
-        receiveStream?.add(SpeechResult.fromJson(newEvent));
-      });
-    }
-    return receiveStream!.stream;
+  /// 语音识别结果监听回调
+  static Future onSpeechResultListener({
+    required Function(String, bool) onSuccess,
+    required Function(String) onError,
+  }) async {
+    onReveivedIatResult.listen((Map<String, Object> event) {
+      SpeechResult speechResult = SpeechResult.fromJson(event);
+      if (speechResult.success == true) {
+        String result = '';
+        bool isLast = false;
+        if (speechResult.result != null) {
+          result = speechResult.result!;
+        }
+        if (speechResult.isLast != null) {
+          isLast = speechResult.isLast!;
+        }
+        onSuccess(result, isLast);
+      } else {
+        onError(speechResult.error ?? '未知错误');
+      }
+    });
   }
 
   /// 语音播放结束回调
-  Stream<void> onCompeleted() {
-    if (receiveTtsStream == null) {
-      receiveTtsStream = StreamController();
-      ttsSubscription = onGetTtsResult.listen((event) {
-        receiveTtsStream?.add(event);
-      });
-    }
-    return receiveTtsStream!.stream;
+  static Future onLoopSpeakingListener({required Function(String) onCompeleted}) async {
+    onReceivedTtsResult.listen((event) {
+      if (event != null && event == 'onCompleted') {
+        onCompeleted(event);
+      }
+    });
   }
 
   /// 初始化

@@ -72,7 +72,7 @@
 ### **添加依赖**
 ```
 dependencies:
-  speech_xf: ^0.0.5
+  speech_xf: ^0.0.7
 
 ```
 
@@ -163,11 +163,13 @@ dependencies:
   await SpeechXf.resumeSpeaking();
   ```
 
-  * 13.循环播放
+  * 13.循环播放(在initState中)
   ```
-  SpeechXf().onCompeleted().listen((event) async {
-      await startSpeaking();
-    });
+   SpeechXf.onLoopSpeakingListener(
+      onCompeleted: (onCompeleted) async {
+        await startSpeaking();
+      },
+    );
   ```
 
   * 14.销毁语音合成器

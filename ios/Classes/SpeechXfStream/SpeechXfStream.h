@@ -15,12 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class SpeechXfStreamHanlder;
 @interface SpeechXfStream : NSObject
 + (instancetype)sharedInstance ;
-@property (nonatomic, strong) SpeechXfStreamHanlder* streamHandler;
+@property (nonatomic, strong) SpeechXfStreamHanlder* iatStreamHandler;
 
 @end
 
 @interface SpeechXfStreamHanlder : NSObject<FlutterStreamHandler>
-@property (nonatomic, strong,nullable) FlutterEventSink eventSink;
+@property (nonatomic, strong,nullable) FlutterEventSink iatEventSink;
 
 @end
 NS_ASSUME_NONNULL_END

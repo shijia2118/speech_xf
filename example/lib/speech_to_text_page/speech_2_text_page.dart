@@ -31,19 +31,17 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     super.initState();
     initSdk();
 
-    /// 语音听写结果监听
-    SpeechXf().onResult().listen((event) {
-      if (event.error != null) {
-        showToast(event.error!, position: ToastPosition.bottom);
-      } else {
-        if (event.result != null) {
-          speechController.text = speechController.text + event.result!;
-        }
-        if (event.isLast == true) {
+    SpeechXf.onSpeechResultListener(
+      onSuccess: (result, isLast) {
+        speechController.text = speechController.text + result;
+        if (isLast) {
           showToast('结束说话...', position: ToastPosition.bottom);
         }
-      }
-    });
+      },
+      onError: (error) {
+        showToast(error);
+      },
+    );
   }
 
   @override

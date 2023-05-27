@@ -292,7 +292,6 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         map.put("result", recognizerResult);
         map.put("success", true);
         map.put("isLast", true);
-        map.put("type", type);
         mIatEventSink.success(map);
       }
     }
@@ -302,7 +301,6 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
       HashMap<String, Object> map = new HashMap<>();
       map.put("error", error.getPlainDescription(true));
       map.put("success", false);
-      map.put("type", type);
       mIatEventSink.success(map);
     }
   };
@@ -323,7 +321,6 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
       HashMap<String, Object> map = new HashMap<>();
       map.put("error", error.getPlainDescription(true));
       map.put("success", false);
-      map.put("type", type);
       mIatEventSink.success(map);
     }
 
@@ -341,7 +338,6 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         map.put("result", recognizerResult);
         map.put("success", true);
         map.put("isLast", true);
-        map.put("type", type);
         mIatEventSink.success(map);
       }
     }
