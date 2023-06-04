@@ -34,7 +34,9 @@ class _Speech2TextPageState extends State<Speech2TextPage> {
     /// 语音识别结果监听
     SpeechXf.onSpeechResultListener(
       onSuccess: (result, isLast) {
-        speechController.text = speechController.text + result;
+        if (mounted) {
+          speechController.text = speechController.text + result;
+        }
         if (isLast) {
           showToast('结束说话...', position: ToastPosition.bottom);
         }

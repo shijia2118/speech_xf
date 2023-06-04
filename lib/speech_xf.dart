@@ -15,6 +15,9 @@ class SpeechXf {
       .receiveBroadcastStream()
       .asBroadcastStream()
       .map<Map<String, Object>>((element) => element.cast<String, Object>());
+  static StreamSubscription<Map<String, Object>>? speechResultSubscription; // 语音识别流
+  static StreamSubscription<Map<String, Object>>? volumeSubscription; // 声音流
+  static StreamSubscription? speakResultSubscription; // 语音合成流
 
   static Stream onReceivedTtsResult = ttsEventChannel.receiveBroadcastStream().asBroadcastStream();
 
@@ -28,7 +31,7 @@ class SpeechXf {
     required Function(String, bool) onSuccess,
     required Function(String) onError,
   }) async {
-    onReveivedIatResult.listen((Map<String, Object> event) {
+    speechResultSubscription = onReveivedIatResult.listen((Map<String, Object> event) {
       SpeechResult speechResult = SpeechResult.fromJson(event);
       if (speechResult.success == true) {
         String result = '';
@@ -46,9 +49,23 @@ class SpeechXf {
     });
   }
 
+  ///移除对语音识别器的监听
+  static void removeIatListener() {
+    speechResultSubscription?.cancel(); // 取消订阅
+    volumeSubscription?.cancel();
+    speechResultSubscription = null; // 清除变量
+    volumeSubscription = null;
+  }
+
+  ///移除对语音合成器的监听
+  static void removeTtsListener() {
+    speakResultSubscription?.cancel(); // 取消订阅
+    speakResultSubscription = null; // 清除变量
+  }
+
   /// 语音播放结束回调
   static Future onLoopSpeakingListener({required Function(String) onCompeleted}) async {
-    onReceivedTtsResult.listen((event) {
+    speakResultSubscription = onReceivedTtsResult.listen((event) {
       if (event != null && event == 'onCompleted') {
         onCompeleted(event);
       }
@@ -57,7 +74,7 @@ class SpeechXf {
 
   /// 声音变化回调
   static Future onVolumeChanged({required Function(int) volume, Function(List<int> byteArray)? bytes}) async {
-    onReveivedVolumeResult.listen((event) {
+    volumeSubscription = onReveivedVolumeResult.listen((event) {
       var v = event['volume'];
       var b = event['data'];
       if (v != null && v is int) {
@@ -252,11 +269,13 @@ class SpeechXf {
 
   ///销毁语音合成器
   static Future<void> ttsDestroy() async {
+    removeTtsListener();
     return await methodChannel.invokeMethod('tts_destroy');
   }
 
   ///销毁语音识别器
   static Future<void> iatDestroy() async {
+    removeIatListener();
     return await methodChannel.invokeMethod('iat_destroy');
   }
 }
