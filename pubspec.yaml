@@ -1,6 +1,6 @@
 name: speech_xf
 description: The plug-in integrates iFlytek's speech recognition and speech synthesis functions. Support for Android and IOS platforms.
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/shijia2118/speech_xf.git
 repository: https://github.com/shijia2118/speech_xf.git
 
