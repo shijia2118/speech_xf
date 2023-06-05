@@ -294,9 +294,9 @@ NSString *pcmFilePath = @"";
         //设置网络超时时间
         [_iFlySpeechRecognizer setParameter:@"20000" forKey:[IFlySpeechConstant NET_TIMEOUT]];
         //设置语言
-        [_iflyRecognizerView setParameter:language forKey:[IFlySpeechConstant LANGUAGE]];
+        [_iFlySpeechRecognizer setParameter:language forKey:[IFlySpeechConstant LANGUAGE]];
         //设置标点
-        [_iflyRecognizerView setParameter:ptt forKey:[IFlySpeechConstant ASR_PTT]];
+        [_iFlySpeechRecognizer setParameter:ptt forKey:[IFlySpeechConstant ASR_PTT]];
     }
     if (_pcmRecorder == nil){
         _pcmRecorder = [IFlyPcmRecorder sharedInstance];
