@@ -445,7 +445,7 @@ NSString *pcmFilePath = @"";
 
     }else{
         if([type isEqual:@"3"]){
-            if(ttsStreamInstance != nil){
+            if(ttsStreamInstance != nil && [ttsStreamInstance ttsStreamHandler] != nil){
                 [ttsStreamInstance ttsStreamHandler].ttsEventSink(@"onCompleted");
             }
         }
