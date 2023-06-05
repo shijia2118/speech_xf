@@ -191,9 +191,7 @@ NSString *pcmFilePath = @"";
  * 开始语音识别
  */
 - (void)startListening :(NSDictionary*) args{
-    if(_iFlySpeechRecognizer == nil){
-        [self initRecognizer : (NSDictionary*) args];
-    }
+    [self initRecognizer : (NSDictionary*) args];
     
     [_iFlySpeechRecognizer cancel];
     
