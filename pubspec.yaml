@@ -6,7 +6,7 @@ repository: https://github.com/shijia2118/speech_xf.git
 
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=2.19.6 <4.0.0'
   flutter: ">=2.5.0"
   
 

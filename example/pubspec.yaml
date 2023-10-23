@@ -5,7 +5,7 @@ description: Demonstrates how to use the speech_xf plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=2.19.6 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -28,9 +28,9 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  permission_handler: ^10.2.0
-  adaptive_dialog: ^1.8.3
-  oktoast: ^3.3.1
+  permission_handler: ^11.0.1
+  adaptive_dialog: ^1.9.0+2
+  oktoast: ^3.3.2+1
 
 dev_dependencies:
   flutter_test:
