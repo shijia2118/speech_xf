@@ -1,11 +1,10 @@
+import 'setting_page.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:oktoast/oktoast.dart';
+import '../utils/permission_util.dart';
 import 'package:speech_xf/speech_xf.dart';
 import 'package:speech_xf_example/constants.dart';
-
-import '../utils/permission_util.dart';
-import 'setting_page.dart';
 
 class Speech2TextPage extends StatefulWidget {
   const Speech2TextPage({super.key});
