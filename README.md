@@ -72,7 +72,7 @@
 ### **添加依赖**
 ```
 dependencies:
-  speech_xf: ^1.2.2
+  speech_xf: ^1.2.3
 
 ```
 
