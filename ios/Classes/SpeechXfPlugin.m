@@ -15,7 +15,8 @@ SpeechTtsStream *ttsStreamInstance;
 SpeechVolumeStream *volumeStreamInstance;
 
 
-NSString *type = @"";
+// NSString *type = @"";
+NSString *speechType = @"";
 
 NSObject<FlutterPluginRegistrar> *flutterPluginRegistrar;
 
@@ -51,11 +52,11 @@ NSString *pcmFilePath = @"";
         //初始化SDK
         [self init : call.arguments];
     } else if([@"open_native_ui_dialog" isEqualToString:call.method]){
-        type = @"1";
+        speechType = @"1";
         //开启带内置UI的语音识别
         [self openNativeUiDialog: call.arguments];
     } else if([@"start_listening" isEqualToString:call.method]){
-        type = @"2";
+        speechType = @"2";
         //开启无UI的语音识别
         [self startListening:call.arguments];
     } else if([@"stop_listening" isEqualToString:call.method]){
@@ -72,7 +73,7 @@ NSString *pcmFilePath = @"";
         [self audioRecognizer:call.arguments];
     } else if([@"start_speaking" isEqualToString:call.method]){
         // 开始语音合成
-        type = @"3";
+        speechType = @"3";
         [self startSpeaking:call.arguments];
     } else if([@"stop_speaking" isEqualToString:call.method]){
         // 取消语音合成
@@ -98,11 +99,11 @@ NSString *pcmFilePath = @"";
             [_iFlySpeechSynthesizer stopSpeaking];
         }
         _iFlySpeechSynthesizer = nil;
-        type = @"";
+        speechType = @"";
     } else if([@"iat_destroy" isEqualToString:call.method ]){
         [_iflyRecognizerView cancel];
         [_iFlySpeechRecognizer destroy];
-        type = @"";
+        speechType = @"";
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -429,7 +430,7 @@ NSString *pcmFilePath = @"";
     NSLog(@"%s",__func__);
     NSString *text ;
     if (error.errorCode != 0 ) {
-        if([type isEqual: @"3"]){
+        if([speechType isEqual: @"3"]){
             [ToastView showToastWithMessage:error.description duration:2];
             return;
         }
@@ -442,7 +443,7 @@ NSString *pcmFilePath = @"";
         [streamInstance iatStreamHandler].iatEventSink(resdic);
 
     }else{
-        if([type isEqual:@"3"]){
+        if([speechType isEqual:@"3"]){
             if(ttsStreamInstance != nil && [ttsStreamInstance ttsStreamHandler] != nil && [ttsStreamInstance ttsStreamHandler].ttsEventSink != nil){
                 [ttsStreamInstance ttsStreamHandler].ttsEventSink(@"onCompleted");
             }
@@ -457,7 +458,7 @@ NSString *pcmFilePath = @"";
 //会话取消回调
 - (void) onCancel{
     NSLog(@"error");
-    type = @"";
+    speechType = @"";
 }
 
 /*!
@@ -480,7 +481,7 @@ NSString *pcmFilePath = @"";
  */
 - (void)onEndOfSpeech {
         NSLog(@"onEndOfSpeech");
-    type = @"";
+    speechType = @"";
     [_pcmRecorder stop];
 }
 
