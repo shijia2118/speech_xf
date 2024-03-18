@@ -53,7 +53,16 @@ class _TtsSettingPageState extends State<TtsSettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return PopScope(
+      onPopInvoked: (didPop) {
+        final map = {
+          'volume': volume,
+          'speed': speed,
+          'pitch': pitch,
+          'streamType': streamType,
+        };
+        widget.callback(map);
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('设置'),
@@ -79,17 +88,6 @@ class _TtsSettingPageState extends State<TtsSettingPage> {
           itemCount: settingList.length,
         ),
       ),
-      onWillPop: () async {
-        Map<String, dynamic> map = {
-          'volume': volume,
-          'speed': speed,
-          'pitch': pitch,
-          'streamType': streamType,
-        };
-        widget.callback(map);
-
-        return true;
-      },
     );
   }
 

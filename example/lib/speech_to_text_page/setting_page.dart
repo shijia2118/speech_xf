@@ -49,7 +49,10 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return PopScope(
+      onPopInvoked: (didPop) {
+        widget.callback(settingResult);
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('设置'),
@@ -73,10 +76,6 @@ class _SettingPageState extends State<SettingPage> {
           itemCount: settingList.length,
         ),
       ),
-      onWillPop: () async {
-        widget.callback(settingResult);
-        return true;
-      },
     );
   }
 
@@ -117,9 +116,8 @@ class _SettingPageState extends State<SettingPage> {
 
   /// 语言设置
   void languageSetting(String title) {
-    List<AlertDialogAction<String>> actions = kLanguages
-        .map((e) => AlertDialogAction(key: e.values.first, label: e.values.first))
-        .toList();
+    List<AlertDialogAction<String>> actions =
+        kLanguages.map((e) => AlertDialogAction(key: e.values.first, label: e.values.first)).toList();
     Future.microtask(() async {
       String? result = await showConfirmationDialog<String>(
         context: context,
@@ -188,8 +186,7 @@ class _SettingPageState extends State<SettingPage> {
   /// 标点符号
   void pttSetting() {
     List<String> list = ['有', '无'];
-    List<AlertDialogAction<String>> actions =
-        list.map((e) => AlertDialogAction(key: e, label: e)).toList();
+    List<AlertDialogAction<String>> actions = list.map((e) => AlertDialogAction(key: e, label: e)).toList();
     Future.microtask(() async {
       String? result = await showConfirmationDialog<String>(
         context: context,
