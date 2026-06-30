@@ -1,5 +1,14 @@
 #import <Flutter/Flutter.h>
-#import "IFlyMSC/IFlyMSC.h"
+
+@class IFlySpeechRecognizer;
+@class IFlyRecognizerView;
+@class IFlyPcmRecorder;
+@class IFlyDataUploader;
+@class IFlySpeechSynthesizer;
+@protocol IFlySpeechRecognizerDelegate;
+@protocol IFlyRecognizerViewDelegate;
+@protocol IFlyPcmRecorderDelegate;
+@protocol IFlySpeechSynthesizerDelegate;
 
 @interface SpeechXfPlugin : NSObject<FlutterPlugin,IFlySpeechRecognizerDelegate,IFlyRecognizerViewDelegate,IFlyPcmRecorderDelegate,IFlySpeechSynthesizerDelegate>
 

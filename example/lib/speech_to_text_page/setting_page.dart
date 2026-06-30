@@ -1,6 +1,6 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_xf_example/constants.dart';
+import 'package:speech_xf_example/utils/dialog_util.dart';
 
 class SettingPage extends StatefulWidget {
   final Map<String, dynamic> settingResult;
@@ -50,7 +50,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         widget.callback(settingResult);
       },
       child: Scaffold(
@@ -93,7 +93,7 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   /// 点击事件
-  void onClickHandle(String title) async {
+  void onClickHandle(String title) {
     switch (title) {
       case '语言设置':
         languageSetting(title);
@@ -115,90 +115,74 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   /// 语言设置
-  void languageSetting(String title) {
-    List<AlertDialogAction<String>> actions =
-        kLanguages.map((e) => AlertDialogAction(key: e.values.first, label: e.values.first)).toList();
-    Future.microtask(() async {
-      String? result = await showConfirmationDialog<String>(
-        context: context,
-        title: title,
-        actions: actions,
-        initialSelectedActionKey: LanguageValue.of(language),
-      );
-      if (result != null) {
-        settingResult['language'] = LanguageKey.of(result);
-      }
-      return result;
-    });
+  Future<void> languageSetting(String title) async {
+    List<MapEntry<String, String>> options = kLanguages
+        .map((e) => MapEntry(e.values.first, e.values.first))
+        .toList();
+    String? result = await showOptionDialog(
+      context: context,
+      title: title,
+      options: options,
+    );
+    if (result != null) {
+      settingResult['language'] = LanguageKey.of(result);
+    }
   }
 
   /// 前后端点检测
   /// vadIndex:0-前端点 1-后端点
-  void vadSetting(int vadIndex) {
+  Future<void> vadSetting(int vadIndex) async {
     String? initialText;
     if (vadIndex == 0) {
       initialText = initVadBos;
     } else if (vadIndex == 1) {
       initialText = initVadEos;
     }
-    Future.microtask(
-      () async {
-        List<String>? result = await showTextInputDialog(
-          context: context,
-          title: '提示',
-          textFields: <DialogTextField>[
-            DialogTextField(
-              hintText: '请输入[0,10000]区间内的数字',
-              initialText: initialText,
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value != null && value.isNotEmpty) {
-                  int? valueInt = int.tryParse(value);
-                  if (valueInt != null) {
-                    if (valueInt < 0 || valueInt > 10000) {
-                      return '请输入[0,10000]区间内的数字';
-                    }
-                  } else {
-                    return '请输入超时时间';
-                  }
-                } else {
-                  return '请输入超时时间';
-                }
-                return null;
-              },
-            ),
-          ],
-        );
-        if (result != null && result.isNotEmpty) {
-          if (vadIndex == 0) {
-            settingResult['vadBos'] = result.first;
-            initVadBos = result.first;
-          } else if (vadIndex == 1) {
-            settingResult['vadEos'] = result.first;
-            initVadEos = result.first;
+    String? result = await showValueInputDialog(
+      context: context,
+      title: '提示',
+      hintText: '请输入[0,10000]区间内的数字',
+      initialText: initialText,
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          int? valueInt = int.tryParse(value);
+          if (valueInt != null) {
+            if (valueInt < 0 || valueInt > 10000) {
+              return '请输入[0,10000]区间内的数字';
+            }
+          } else {
+            return '请输入超时时间';
           }
+        } else {
+          return '请输入超时时间';
         }
-        return result;
+        return null;
       },
     );
+    if (result != null && result.isNotEmpty) {
+      if (vadIndex == 0) {
+        settingResult['vadBos'] = result;
+        initVadBos = result;
+      } else if (vadIndex == 1) {
+        settingResult['vadEos'] = result;
+        initVadEos = result;
+      }
+    }
   }
 
   /// 标点符号
-  void pttSetting() {
+  Future<void> pttSetting() async {
     List<String> list = ['有', '无'];
-    List<AlertDialogAction<String>> actions = list.map((e) => AlertDialogAction(key: e, label: e)).toList();
-    Future.microtask(() async {
-      String? result = await showConfirmationDialog<String>(
-        context: context,
-        title: '标点符号',
-        actions: actions,
-        initialSelectedActionKey: GetPttValue.of(ptt),
-      );
-      if (result != null) {
-        settingResult['ptt'] = GetPttKey.of(result);
-      }
-      return result;
-    });
+    List<MapEntry<String, String>> options =
+        list.map((e) => MapEntry(e, e)).toList();
+    String? result = await showOptionDialog(
+      context: context,
+      title: '标点符号',
+      options: options,
+    );
+    if (result != null) {
+      settingResult['ptt'] = GetPttKey.of(result);
+    }
   }
 
   /// 返回按钮

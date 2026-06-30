@@ -1,6 +1,6 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_xf_example/constants.dart';
+import 'package:speech_xf_example/utils/dialog_util.dart';
 
 class TtsSettingPage extends StatefulWidget {
   final String volume;
@@ -54,7 +54,7 @@ class _TtsSettingPageState extends State<TtsSettingPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         final map = {
           'volume': volume,
           'speed': speed,
@@ -104,7 +104,7 @@ class _TtsSettingPageState extends State<TtsSettingPage> {
   }
 
   /// 点击事件
-  void onClickHandle(String title) async {
+  void onClickHandle(String title) {
     switch (title) {
       case '语速':
         inputDialog(title, speed);
@@ -124,56 +124,48 @@ class _TtsSettingPageState extends State<TtsSettingPage> {
   }
 
   /// 音频流类型
-  void selectStreamType() {
-    List<AlertDialogAction<String>> actions =
-        kStreamTypes.map((e) => AlertDialogAction(key: kStreamTypes.indexOf(e).toString(), label: e)).toList();
-    Future.microtask(() async {
-      String? result = await showConfirmationDialog<String>(
-        context: context,
-        title: '请选择音频流类型',
-        actions: actions,
-        initialSelectedActionKey: streamType,
-      );
-      if (result != null) {
-        streamType = result;
-      }
-      return result;
-    });
+  Future<void> selectStreamType() async {
+    List<MapEntry<String, String>> options = kStreamTypes
+        .map((e) => MapEntry(kStreamTypes.indexOf(e).toString(), e))
+        .toList();
+    String? result = await showOptionDialog(
+      context: context,
+      title: '请选择音频流类型',
+      options: options,
+    );
+    if (result != null) {
+      streamType = result;
+    }
   }
 
   ///设置语速、音量和音调
   void inputDialog(String title, String initText) async {
-    List<String>? results = await showTextInputDialog(
+    String? result = await showValueInputDialog(
       context: context,
       title: title,
-      barrierDismissible: true,
-      textFields: [
-        DialogTextField(
-            hintText: '请输入0~100的整数值',
-            keyboardType: TextInputType.number,
-            initialText: initText,
-            validator: (value) {
-              if (value == null) {
-                return '请输入0~100的整数值';
-              }
-              int? v = int.tryParse(value);
-              if (v == null) {
-                return '请输入0~100的整数值';
-              }
-              if (v < 0 || v > 100) {
-                return '请输入0~100的整数值';
-              }
-              return null;
-            }),
-      ],
+      hintText: '请输入0~100的整数值',
+      initialText: initText,
+      validator: (value) {
+        if (value == null) {
+          return '请输入0~100的整数值';
+        }
+        int? v = int.tryParse(value);
+        if (v == null) {
+          return '请输入0~100的整数值';
+        }
+        if (v < 0 || v > 100) {
+          return '请输入0~100的整数值';
+        }
+        return null;
+      },
     );
-    if (results != null) {
+    if (result != null) {
       if (title.contains('音量')) {
-        volume = results.first;
+        volume = result;
       } else if (title.contains('语速')) {
-        speed = results.first;
+        speed = result;
       } else if (title.contains('音调')) {
-        pitch = results.first;
+        pitch = result;
       }
     }
   }

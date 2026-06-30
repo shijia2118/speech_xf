@@ -35,7 +35,6 @@ import java.util.Objects;
 
 import io.flutter.BuildConfig;
 import io.flutter.Log;
-import io.flutter.embedding.engine.loader.FlutterLoader;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -44,12 +43,12 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.view.FlutterMain;
 
 /** SpeechXfPlugin */
 public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
 
   private MethodChannel channel;
+  private FlutterPlugin.FlutterAssets flutterAssets;
   public static EventChannel.EventSink mIatEventSink = null;
   public static EventChannel.EventSink mTtsEventSink = null;
   public static EventChannel.EventSink volumeEventSink = null;
@@ -83,6 +82,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    flutterAssets = flutterPluginBinding.getFlutterAssets();
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "xf_speech_to_text");
     channel.setMethodCallHandler(this);
 
@@ -200,7 +200,7 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
         }
         try {
           String fileName = call.argument("path");
-          String key = FlutterMain.getLookupKeyForAsset("assets/" + fileName); // 获取 assets 中文件的 key
+          String key = flutterAssets.getAssetFilePathByName("assets/" + fileName); // 获取 assets 中文件的 key
           InputStream open = mContext.getAssets().open(key);
           byte[] buff = new byte[1280];
           while (open.available() > 0) {
@@ -642,4 +642,3 @@ public class SpeechXfPlugin implements FlutterPlugin, MethodCallHandler, Activit
     }
   };
 }
-

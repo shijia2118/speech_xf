@@ -10,7 +10,6 @@
 
 
 #import <Foundation/Foundation.h>
-#import "IFlyMSC/IFlyMSC.h"
 
 @interface TTSConfig : NSObject
 

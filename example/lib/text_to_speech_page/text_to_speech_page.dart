@@ -1,8 +1,8 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_xf/speech_xf.dart';
 import 'package:speech_xf_example/constants.dart';
 import 'package:speech_xf_example/text_to_speech_page/tts_setting_page.dart';
+import 'package:speech_xf_example/utils/dialog_util.dart';
 
 class TextToSpeechPage extends StatefulWidget {
   const TextToSpeechPage({super.key});
@@ -65,7 +65,8 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
                 ),
                 const Text('在线合成'),
                 const Spacer(),
-                FilledButton(onPressed: onSelectVoicer, child: const Text('发音人')),
+                FilledButton(
+                    onPressed: onSelectVoicer, child: const Text('发音人')),
               ],
             ),
             const SizedBox(height: 20),
@@ -114,23 +115,19 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
   }
 
   ///选择发音人
-  void onSelectVoicer() {
-    List<AlertDialogAction<String>> actions = [];
+  Future<void> onSelectVoicer() async {
+    List<MapEntry<String, String>> options = [];
     kVoicerList.forEach((key, value) {
-      actions.add(AlertDialogAction(key: key, label: value));
+      options.add(MapEntry(key, value));
     });
-    Future.microtask(() async {
-      String? result = await showConfirmationDialog<String>(
-        context: context,
-        title: '在线合成发音人选项',
-        actions: actions,
-        initialSelectedActionKey: voicer,
-      );
-      if (result != null) {
-        voicer = result;
-      }
-      return result;
-    });
+    String? result = await showOptionDialog(
+      context: context,
+      title: '在线合成发音人选项',
+      options: options,
+    );
+    if (result != null) {
+      voicer = result;
+    }
   }
 
   /// 底部操作按钮
