@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:speech_xf_example/constants.dart';
+import 'package:speech_xf_example/real_time_translation_page/english_to_chinese_page.dart';
 import 'package:speech_xf_example/speech_to_text_page/speech_2_text_page.dart';
 import 'package:speech_xf_example/text_to_speech_page/text_to_speech_page.dart';
 
@@ -44,6 +45,11 @@ class _HomePageState extends State<HomePage> {
               '立刻体验语音合成',
               padding: const EdgeInsets.symmetric(vertical: 10),
               onPressed: () => pushTo(const TextToSpeechPage()),
+            ),
+            pushWidget(
+              '同声传译(英文 => 中文)',
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              onPressed: () => pushTo(const EnglishToChinesePage()),
             ),
           ],
         ),

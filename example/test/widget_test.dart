@@ -17,5 +17,6 @@ void main() {
     expect(find.text('讯飞语音示例'), findsOneWidget);
     expect(find.text('立刻体验语音听写'), findsOneWidget);
     expect(find.text('立刻体验语音合成'), findsOneWidget);
+    expect(find.text('同声传译(英文 => 中文)'), findsOneWidget);
   });
 }
