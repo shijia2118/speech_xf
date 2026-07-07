@@ -1,3 +1,6 @@
+## 2.0.1
+* 调整 Dart SDK 版本约束写法，兼容 pub.dev 发布校验规则。
+
 ## 2.0.0
 * 升级 Flutter / Dart 约束，适配 Flutter 3.44.2。
 * Android 端升级 Gradle / AGP / Kotlin 配置，迁移 example 工程到新版 Gradle Kotlin DSL。
